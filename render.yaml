@@ -1,0 +1,32 @@
+# Render blueprint — worker cron jobs (foundation §3: cron loop + Postgres, no queue).
+# Connect the repo in Render → Blueprints; set env vars in the dashboard (never here).
+# Times UTC: 21:00 UTC = 05:00 SGT (poll before SEA morning), score 30 min later.
+services:
+  - type: cron
+    name: dealradar-poll
+    runtime: python
+    rootDir: worker
+    schedule: "0 21 * * *"
+    buildCommand: pip install uv && uv sync --frozen
+    startCommand: uv run python poll.py
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: AMADEUS_CLIENT_ID
+        sync: false
+      - key: AMADEUS_CLIENT_SECRET
+        sync: false
+      - key: AMADEUS_ENV
+        value: test
+
+  - type: cron
+    name: dealradar-score
+    runtime: python
+    rootDir: worker
+    schedule: "30 21 * * *"
+    buildCommand: pip install uv && uv sync --frozen
+    startCommand: uv run python score.py
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+# alert cron lands in task 8 (needs Resend + double opt-in flow first)

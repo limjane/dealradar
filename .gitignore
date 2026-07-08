@@ -1,0 +1,40 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Next.js
+apps/web/.next/
+*.tsbuildinfo
+apps/web/out/
+apps/web/next-env.d.ts
+apps/web/.vercel/
+
+# Drizzle
+apps/web/drizzle/meta/_journal.json.bak
+
+# Python worker
+worker/.venv/
+worker/__pycache__/
+worker/**/__pycache__/
+worker/.ruff_cache/
+worker/.pytest_cache/
+*.pyc
+
+# Env & secrets — NEVER commit
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# Build & logs
+*.log
+dist/
+build/
+coverage/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json

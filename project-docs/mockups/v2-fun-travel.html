@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DealRadar — Mockup v2 (fun travel look, premium)</title>
+<!-- Mockup only: production self-hosts this single variable font (preloaded) to keep Lighthouse ≥95 -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#231a4f; --ink-soft:#6f6795; --line:#ece5f2;
+    --bg:#faf7ff; --card:#ffffff; --cream:#fff9f0;
+    --coral:#ff5a4e; --coral-deep:#f03e31; --sun:#ffb648; --teal:#0fb5a6; --lilac:#8b5cf6;
+    --grab:#059669; --fair:#b45309; --high:#e11d48; --nodata:#64748b;
+    --shadow-sm:0 1px 2px rgba(35,26,79,.06),0 4px 14px rgba(35,26,79,.06);
+    --shadow-md:0 2px 4px rgba(35,26,79,.06),0 12px 32px rgba(35,26,79,.10);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",sans-serif;background:#efeaf6;color:var(--ink);line-height:1.5;padding-bottom:90px}
+  .mock-label{max-width:780px;margin:52px auto 12px;font-size:12.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#8b7fb8;padding:0 16px}
+  .frame{max-width:780px;margin:0 auto;background:var(--bg);border:1px solid var(--line);border-radius:22px;overflow:hidden;box-shadow:var(--shadow-md)}
+
+  /* ---------- header ---------- */
+  header.site{display:flex;justify-content:space-between;align-items:center;padding:16px 24px;background:var(--card);border-bottom:1px solid var(--line)}
+  header.site.on-dark{background:transparent;border-bottom:1px solid rgba(255,255,255,.14)}
+  .logo{font-weight:800;font-size:19px;letter-spacing:-.02em;color:var(--ink);display:flex;align-items:center;gap:8px}
+  .logo .mark{width:28px;height:28px;border-radius:9px;background:linear-gradient(135deg,var(--coral),var(--sun));display:inline-flex;align-items:center;justify-content:center;color:#fff;font-size:14px;box-shadow:0 3px 8px rgba(240,62,49,.35)}
+  .on-dark .logo{color:#fff}
+  nav.site a{font-size:14px;font-weight:600;color:var(--ink-soft);text-decoration:none;margin-left:20px}
+  .on-dark nav.site a{color:rgba(255,255,255,.85)}
+  nav.site a.pill{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.25);padding:7px 14px;border-radius:999px;color:#fff}
+
+  /* ---------- verdict badges ---------- */
+  .badge{display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:800;padding:6px 14px;border-radius:999px;letter-spacing:.01em}
+  .badge.grab{background:linear-gradient(135deg,#d8fbe9,#baf3d9);color:var(--grab);box-shadow:0 2px 8px rgba(5,150,105,.18)}
+  .badge.fair{background:linear-gradient(135deg,#fef3c7,#fde68a);color:var(--fair)}
+  .badge.high{background:linear-gradient(135deg,#ffe4e6,#fecdd3);color:var(--high)}
+  .badge.nodata{background:#eceef3;color:var(--nodata)}
+
+  /* ---------- HERO ---------- */
+  .hero{position:relative;padding:0 0 78px;background:linear-gradient(165deg,#241a5e 0%,#4b2585 34%,#b23a79 66%,#ff8e53 100%);overflow:hidden}
+  .hero .sky{position:absolute;inset:0;pointer-events:none}
+  .hero-inner{position:relative;padding:52px 24px 0;text-align:center}
+  .hero h1{font-size:clamp(30px,5vw,42px);font-weight:800;letter-spacing:-.03em;color:#fff;line-height:1.12;margin-bottom:10px}
+  .hero h1 .zing{position:relative;white-space:nowrap;background:linear-gradient(90deg,var(--sun),#ff7a59);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+  .hero h1 .zing svg{position:absolute;left:0;right:0;bottom:-10px;width:100%;height:10px}
+  .hero p{color:rgba(255,255,255,.85);font-size:16.5px;font-weight:600;margin-bottom:30px}
+  .searchcard{max-width:660px;margin:0 auto;background:rgba(255,255,255,.96);backdrop-filter:blur(8px);border-radius:20px;padding:12px;box-shadow:0 20px 50px rgba(20,10,60,.35);text-align:left}
+  .fields{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  @media(min-width:620px){.fields{grid-template-columns:1.2fr 1.2fr 1fr 1fr}}
+  .field{background:#f6f3fb;border:1.5px solid transparent;border-radius:13px;padding:9px 12px;transition:border .15s}
+  .field:hover{border-color:#d9cdf5}
+  .field label{display:block;font-size:10.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft)}
+  .field input{width:100%;border:0;background:transparent;font:inherit;font-size:15px;font-weight:700;color:var(--ink);outline:none}
+  .field input::placeholder{color:#b6aed3;font-weight:600}
+  .searchcard button{width:100%;margin-top:8px;background:linear-gradient(135deg,var(--coral),#ff7a3d);color:#fff;border:0;border-radius:14px;padding:15px;font:inherit;font-size:16.5px;font-weight:800;cursor:pointer;box-shadow:0 8px 22px rgba(240,62,49,.4);transition:transform .12s}
+  .searchcard button:hover{transform:translateY(-1px)}
+  .hot-chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:22px}
+  .hot-chips a{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:700;color:#fff;text-decoration:none;background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.22);border-radius:999px;padding:7px 14px;backdrop-filter:blur(4px)}
+  .hot-chips a b{color:#ffe08a}
+  .trustbar{display:flex;flex-wrap:wrap;gap:18px;justify-content:center;margin-top:26px;font-size:12.5px;font-weight:700;color:rgba(255,255,255,.75)}
+  .trustbar span{display:inline-flex;align-items:center;gap:6px}
+
+  /* ---------- results ---------- */
+  .qbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:16px 24px;background:var(--card);border-bottom:1px solid var(--line);font-size:14px;color:var(--ink-soft);font-weight:600}
+  .qbar b{color:var(--ink);font-weight:800}
+  .chip{background:#f1ecfa;border-radius:999px;padding:4px 12px;font-size:12.5px;font-weight:700;color:var(--ink)}
+  .verdict-card{position:relative;margin:18px 22px;padding:22px;border-radius:20px;display:flex;flex-wrap:wrap;gap:16px;align-items:center;justify-content:space-between;border:2px solid transparent;background:linear-gradient(var(--card),var(--card)) padding-box,linear-gradient(135deg,#34d399,#059669) border-box;box-shadow:0 10px 30px rgba(5,150,105,.14)}
+  .verdict-card .big{font-size:42px;font-weight:800;letter-spacing:-.03em;line-height:1;margin-top:10px}
+  .verdict-card .big small{font-size:15px;font-weight:700;color:var(--ink-soft);letter-spacing:0}
+  .verdict-card .sub{font-size:14px;color:var(--ink-soft);font-weight:600;margin-top:6px}
+  .verdict-card .sub b{color:var(--ink)}
+  .spark{flex:0 0 180px}
+  .provider{display:flex;align-items:center;justify-content:space-between;gap:14px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px 18px;margin:10px 22px;box-shadow:var(--shadow-sm);transition:transform .12s,box-shadow .12s}
+  .provider:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}
+  .plogo{flex:0 0 44px;width:44px;height:44px;border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#fff}
+  .provider .name{font-weight:800;font-size:15.5px}
+  .provider .meta{font-size:12.5px;color:var(--ink-soft);font-weight:600}
+  .provider .price{font-size:21px;font-weight:800;text-align:right;letter-spacing:-.02em}
+  .provider .price small{display:block;font-size:11px;font-weight:600;color:var(--ink-soft);letter-spacing:0}
+  .go{background:linear-gradient(135deg,var(--coral),#ff7a3d);color:#fff;text-decoration:none;font-size:14px;font-weight:800;padding:10px 18px;border-radius:12px;white-space:nowrap;box-shadow:0 4px 12px rgba(240,62,49,.3)}
+  .best-tag{display:inline-block;font-size:10.5px;font-weight:800;color:#fff;letter-spacing:.06em;background:linear-gradient(135deg,#10b981,#059669);border-radius:6px;padding:2px 8px;margin-bottom:4px}
+  .stale{font-size:12.5px;color:var(--ink-soft);font-weight:600;text-align:center;padding:10px 24px 22px}
+  .states{display:flex;flex-wrap:wrap;gap:10px;padding:0 22px 22px}
+  .state-chip{flex:1 1 165px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;font-size:12.5px;font-weight:600;color:var(--ink-soft);box-shadow:var(--shadow-sm)}
+  .state-chip .badge{margin-bottom:8px}
+
+  /* ---------- watch capture ---------- */
+  .watch{margin:18px 22px;background:linear-gradient(135deg,#f3eeff,#ffeef3);border:1px solid #e6dcf8;border-radius:18px;padding:20px;text-align:center;box-shadow:var(--shadow-sm)}
+  .watch .wt{font-size:16px;font-weight:800}
+  .watch .ws{font-size:13.5px;color:var(--ink-soft);font-weight:600;margin-top:4px}
+  .watch .row{display:flex;gap:8px;max-width:430px;margin:14px auto 0}
+  .watch input{flex:1;border:1.5px solid #ddd2f0;background:#fff;border-radius:12px;padding:12px 14px;font:inherit;font-size:14px;font-weight:600;outline:none}
+  .watch input:focus{border-color:var(--lilac)}
+  .watch button{background:var(--ink);color:#fff;border:0;border-radius:12px;padding:12px 20px;font:inherit;font-weight:800;cursor:pointer}
+
+  /* ---------- flights list ---------- */
+  .flight{display:flex;align-items:center;gap:14px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px 18px;margin:10px 22px;box-shadow:var(--shadow-sm);transition:transform .12s,box-shadow .12s}
+  .flight:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}
+  .flight .who{flex:0 0 150px}
+  .flight .airline{font-weight:800;font-size:14.5px;display:flex;align-items:center;gap:9px}
+  .flight .via{font-size:11.5px;color:var(--ink-soft);font-weight:600;margin-top:3px}
+  .leg{flex:1;display:flex;align-items:center;gap:10px;min-width:200px}
+  .leg .t{font-weight:800;font-size:16px;letter-spacing:-.01em}
+  .leg .t small{display:block;font-size:10.5px;font-weight:700;color:var(--ink-soft);letter-spacing:.05em}
+  .leg .path{flex:1;text-align:center;position:relative}
+  .leg .path .dur{font-size:11px;font-weight:700;color:var(--ink-soft)}
+  .leg .path .line{height:2px;background:repeating-linear-gradient(90deg,#c9bfe6 0 6px,transparent 6px 11px);margin:4px 0;position:relative}
+  .leg .path .line::after{content:"✈";position:absolute;top:-9px;left:50%;transform:translateX(-50%);font-size:12px;color:var(--lilac);background:var(--card);padding:0 3px}
+  .leg .path .stops{font-size:10.5px;font-weight:800;letter-spacing:.04em}
+  .leg .path .stops.direct{color:var(--grab)}
+  .leg .path .stops.one{color:var(--fair)}
+  .flight .right{text-align:right;display:flex;align-items:center;gap:14px}
+  .flight .price{font-size:20px;font-weight:800;letter-spacing:-.02em}
+  .flight .price small{display:block;font-size:10.5px;font-weight:600;color:var(--ink-soft)}
+  .mono{border-radius:11px;width:36px;height:36px;flex:0 0 36px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:800}
+
+  /* ---------- route page ---------- */
+  .pad{padding:22px 24px 4px}
+  h1.route-h{font-size:26px;font-weight:800;letter-spacing:-.02em}
+  .statrow{display:flex;flex-wrap:wrap;gap:10px;margin:16px 22px 0}
+  .stat{flex:1 1 110px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;box-shadow:var(--shadow-sm)}
+  .stat .k{font-size:10.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft)}
+  .stat .v{font-size:19px;font-weight:800;letter-spacing:-.02em;margin-top:2px}
+  .chart-wrap{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:20px;margin:14px 22px;box-shadow:var(--shadow-sm)}
+  .chart-wrap h3{font-size:15px;font-weight:800;margin-bottom:2px}
+  .chart-wrap .note{font-size:12.5px;font-weight:600;color:var(--ink-soft);margin-bottom:12px}
+  .faq{margin:0 22px 22px;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:20px;box-shadow:var(--shadow-sm)}
+  .faq h3{font-size:15px;font-weight:800;margin-bottom:10px}
+  .faq p{font-size:13.5px;font-weight:600;color:var(--ink-soft);margin-bottom:10px}
+  .faq b{color:var(--ink)}
+
+  /* ---------- feed ---------- */
+  .deal-card{display:flex;gap:14px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:14px;margin:12px 22px;box-shadow:var(--shadow-sm);transition:transform .12s,box-shadow .12s}
+  .deal-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}
+  .dest{flex:0 0 68px;width:68px;height:68px;border-radius:15px;display:flex;align-items:center;justify-content:center;font-size:30px;box-shadow:inset 0 -14px 20px rgba(0,0,0,.12)}
+  .deal-card .route{font-weight:800;font-size:16.5px;letter-spacing:-.01em;margin-top:5px}
+  .deal-card .when{font-size:12.5px;font-weight:600;color:var(--ink-soft)}
+  .deal-card .p{font-size:24px;font-weight:800;letter-spacing:-.02em}
+  .deal-card .p small{display:block;font-size:11px;font-weight:600;color:var(--ink-soft);text-decoration:line-through}
+  h2.sec{font-size:19px;font-weight:800;letter-spacing:-.01em;padding:22px 24px 4px}
+  h2.sec + .sub{padding:0 24px;font-size:13.5px;font-weight:600;color:var(--ink-soft)}
+
+  /* ---------- email ---------- */
+  .email-frame{max-width:600px;margin:0 auto;background:#fff;border:1px solid var(--line);border-radius:20px;overflow:hidden;box-shadow:var(--shadow-md)}
+  .email-head{background:linear-gradient(135deg,#241a5e,#b23a79);color:#fff;padding:22px 24px}
+  .email-head .eyebrow{font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#ffd58a}
+  .email-head .h{font-size:21px;font-weight:800;margin-top:4px}
+  .email-body{padding:22px}
+  .email-body .deal{border:2px solid #baf3d9;border-radius:16px;padding:18px;margin-bottom:14px;background:linear-gradient(180deg,#f6fffb,#fff)}
+  .email-cta{display:block;background:linear-gradient(135deg,var(--coral),#ff7a3d);color:#fff;text-align:center;text-decoration:none;font-weight:800;border-radius:12px;padding:14px;margin-top:12px;box-shadow:0 6px 16px rgba(240,62,49,.3)}
+  .email-foot{padding:16px 22px;font-size:11.5px;font-weight:600;color:var(--ink-soft);border-top:1px solid var(--line)}
+  .email-foot a{color:var(--ink-soft)}
+
+  /* ---------- MOTION LAYER (all CSS/SVG — no JS) ---------- */
+  /* fire: wrapper flickers scale, inner/outer paths wobble via SMIL in the symbol */
+  .flame{display:inline-block;vertical-align:-2px;transform-origin:50% 92%;animation:flick .45s ease-in-out infinite alternate;filter:drop-shadow(0 1px 4px rgba(255,110,40,.55))}
+  @keyframes flick{from{transform:scaleY(1) scaleX(1)}to{transform:scaleY(1.14) scaleX(.92)}}
+  /* sky */
+  .star{animation:twinkle 2.6s ease-in-out infinite}
+  @keyframes twinkle{0%,100%{opacity:.85}50%{opacity:.1}}
+  .cloud{animation:drift 9s ease-in-out infinite alternate}
+  @keyframes drift{from{transform:translateX(-14px)}to{transform:translateX(20px)}}
+  /* charts draw themselves, "today" dot pings like a radar */
+  .drawline{stroke-dasharray:100;stroke-dashoffset:100;animation:draw 2.2s ease-out forwards .3s}
+  @keyframes draw{to{stroke-dashoffset:0}}
+  .areafill{opacity:0;animation:fadeup 1s ease-out forwards 1.8s}
+  @keyframes fadeup{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  .ping{transform-box:fill-box;transform-origin:center;animation:ping 1.8s cubic-bezier(0,0,.2,1) infinite 2.2s;opacity:0}
+  @keyframes ping{0%{transform:scale(.4);opacity:.8}80%,100%{transform:scale(2.4);opacity:0}}
+  /* trend arrows bounce in their direction */
+  .arrow-up{display:inline-block;animation:bounceup 1s ease-in-out infinite}
+  @keyframes bounceup{0%,100%{transform:translateY(2px)}50%{transform:translateY(-2.5px)}}
+  /* destination tiles + hero chips float like postcards */
+  .dest{animation:floaty 3.6s ease-in-out infinite}
+  .hot-chips a{animation:floaty 4.2s ease-in-out infinite}
+  .hot-chips a:nth-child(2),.deal-card:nth-of-type(2) .dest{animation-delay:.6s}
+  .hot-chips a:nth-child(3),.deal-card:nth-of-type(3) .dest{animation-delay:1.2s}
+  .hot-chips a:nth-child(4){animation-delay:1.8s}
+  @keyframes floaty{0%,100%{transform:translateY(0) rotate(-1deg)}50%{transform:translateY(-5px) rotate(1.5deg)}}
+  /* bells ring */
+  .bell{display:inline-block;transform-origin:50% 10%;animation:ringbell 2.8s ease-in-out infinite}
+  @keyframes ringbell{0%,60%,100%{transform:rotate(0)}8%{transform:rotate(16deg)}22%{transform:rotate(-13deg)}36%{transform:rotate(9deg)}48%{transform:rotate(-5deg)}}
+  /* light sweep across primary CTAs; row buttons sweep on hover */
+  .searchcard button,.email-cta,.go{position:relative;overflow:hidden}
+  .searchcard button::after,.email-cta::after,.go:hover::after{content:"";position:absolute;top:0;bottom:0;width:36%;left:0;background:linear-gradient(100deg,transparent,rgba(255,255,255,.5),transparent);animation:sweep 3.2s ease-in-out infinite}
+  .go:hover::after{animation-duration:.9s}
+  @keyframes sweep{0%{transform:translateX(-130%) skewX(-18deg)}55%,100%{transform:translateX(320%) skewX(-18deg)}}
+  /* verdict price pops in */
+  .verdict-card .big{animation:popin .7s cubic-bezier(.2,1.4,.4,1) both .25s}
+  @keyframes popin{0%{opacity:0;transform:scale(.8)}70%{transform:scale(1.05)}100%{opacity:1;transform:scale(1)}}
+  /* mascot faces his direction of travel: mirrored on the return (R→L) leg, synced to the 26s flight */
+  .flip{transform-box:fill-box;transform-origin:center;animation:flipseq 31s linear infinite}
+  @keyframes flipseq{0%,29%{transform:scaleX(1)}30%,51%{transform:scaleX(-1)}52%,100%{transform:scaleX(1)}}
+  /* mascot sheet */
+  .m-grid{display:flex;flex-wrap:wrap;gap:12px;padding:16px 22px 8px}
+  .m-card{flex:1 1 155px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px 12px 14px;text-align:center;box-shadow:var(--shadow-sm)}
+  .m-card svg.pose{animation:floaty 3.8s ease-in-out infinite}
+  .m-card:nth-child(2) svg.pose{animation-delay:.5s}
+  .m-card:nth-child(3) svg.pose{animation-delay:1s}
+  .m-card:nth-child(4) svg.pose{animation-delay:1.5s}
+  .m-card .cap{font-size:12px;font-weight:600;color:var(--ink-soft);margin-top:8px;line-height:1.4}
+  .m-card .badge{margin-top:8px;font-size:11px;padding:4px 10px}
+  @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<!-- Reusable animated symbols (SMIL wobble runs inside every <use>) -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="fire" viewBox="0 0 24 24">
+    <path fill="#ff5a1f" d="M12 2C12 2 5 9 5 14.5A7 7 0 0 0 19 14.5C19 9 12 2 12 2Z">
+      <animateTransform attributeName="transform" type="rotate" values="-2.5 12 20;2.5 12 20;-2.5 12 20" dur="0.9s" repeatCount="indefinite"/>
+    </path>
+    <path fill="#ffc94d" d="M12 10.5C12 10.5 8.8 13.4 8.8 15.8A3.2 3.2 0 0 0 15.2 15.8C15.2 13.4 12 10.5 12 10.5Z">
+      <animateTransform attributeName="transform" type="rotate" values="3.5 12 18;-3.5 12 18;3.5 12 18" dur="0.6s" repeatCount="indefinite"/>
+    </path>
+  </symbol>
+  <!-- "Radar" the deal-scout swift · base rig (wing + tail flap via SMIL, eyes added per pose) -->
+  <symbol id="bird-base" viewBox="0 0 120 120">
+    <defs>
+      <linearGradient id="bodyg" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#ff7a5c"/><stop offset="1" stop-color="#f03e31"/>
+      </linearGradient>
+    </defs>
+    <g>
+      <path fill="#e8402f" d="M30 60 C14 50 8 38 12 26 C20 40 30 46 40 50 Z"/>
+      <animateTransform attributeName="transform" type="rotate" values="-7 34 56;7 34 56;-7 34 56" dur="0.9s" repeatCount="indefinite"/>
+    </g>
+    <ellipse cx="62" cy="62" rx="32" ry="28" fill="url(#bodyg)"/>
+    <ellipse cx="72" cy="72" rx="17" ry="12" fill="#ffedd0"/>
+    <rect x="42" y="40" width="40" height="7" rx="3.5" fill="#231a4f"/>
+    <path fill="#ffb648" d="M92 52 L110 58 L92 64 Q95 58 92 52 Z"/>
+    <ellipse cx="86" cy="66" rx="4.5" ry="2.8" fill="#ff9d94" opacity=".8"/>
+    <circle cx="80" cy="46" r="14" fill="#fff" stroke="#231a4f" stroke-width="4"/>
+    <g>
+      <path fill="#e8402f" d="M56 56 C40 42 22 42 12 52 C26 56 30 66 44 70 C52 72 58 66 56 56 Z"/>
+      <animateTransform attributeName="transform" type="rotate" values="-16 54 58;14 54 58;-16 54 58" dur="0.55s" repeatCount="indefinite"/>
+    </g>
+  </symbol>
+  <symbol id="trend-up" viewBox="0 0 24 24">
+    <path fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" d="M3 17l6-6 4 4 8-8"/>
+    <path fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" d="M15 7h6v6"/>
+  </symbol>
+</svg>
+
+<!-- ============================================================ -->
+<div class="mock-label">Mockup v2 · 1 — Home / Search (the front door)</div>
+<div class="frame">
+  <div class="hero">
+    <svg class="sky" viewBox="0 0 780 520" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+      <circle class="star" cx="60" cy="70" r="1.6" fill="#fff"/><circle class="star" style="animation-delay:.4s" cx="180" cy="40" r="1.2" fill="#fff"/>
+      <circle class="star" style="animation-delay:.9s" cx="320" cy="90" r="1.4" fill="#fff"/><circle class="star" style="animation-delay:1.3s" cx="700" cy="60" r="1.6" fill="#fff"/>
+      <circle class="star" style="animation-delay:1.7s" cx="600" cy="120" r="1.1" fill="#fff"/><circle class="star" style="animation-delay:2.1s" cx="740" cy="160" r="1.3" fill="#fff"/>
+      <circle class="star" style="animation-delay:.6s" cx="120" cy="150" r="1.2" fill="#fff"/><circle class="star" style="animation-delay:1.5s" cx="480" cy="45" r="1.5" fill="#fff"/>
+      <!-- flight route: L→R low pass, U-turn up the right edge, R→L along the top, glide down to the left perch -->
+      <path id="flightpath" d="M-100 150 C 200 115, 480 175, 700 130 C 770 112, 785 80, 700 66 C 480 40, 240 38, 90 66 C 55 76, 44 130, 42 186" fill="none" stroke="none"/>
+      <!-- flying Radar (fades out at the perch) -->
+      <g>
+        <animate attributeName="opacity" values="1;1;0;0" keyTimes="0;.515;.52;1" dur="31s" repeatCount="indefinite"/>
+        <g transform="translate(-38,-38) scale(.64)">
+          <g class="flip">
+            <circle cx="2" cy="62" r="6" fill="rgba(255,255,255,.5)">
+              <animate attributeName="opacity" values=".55;.05;.55" dur="1.1s" repeatCount="indefinite"/>
+            </circle>
+            <circle cx="-14" cy="70" r="4" fill="rgba(255,255,255,.35)">
+              <animate attributeName="opacity" values=".4;.05;.4" dur="1.1s" begin=".35s" repeatCount="indefinite"/>
+            </circle>
+            <use href="#bird-base"/>
+            <circle cx="84" cy="48" r="6" fill="#231a4f"/>
+            <circle cx="82" cy="46" r="2" fill="#fff"/>
+            <circle cx="80" cy="46" r="12.5" fill="#ff7a5c" opacity="0">
+              <animate attributeName="opacity" values="0;0;1;0;0" keyTimes="0;.88;.92;.96;1" dur="4.5s" repeatCount="indefinite"/>
+            </circle>
+          </g>
+        </g>
+        <animateMotion dur="31s" repeatCount="indefinite" keyPoints="0;1;1" keyTimes="0;.52;1" calcMode="linear"><mpath href="#flightpath"/></animateMotion>
+      </g>
+      <!-- perched Radar: sits ~15s at the left edge watching — breathes, hops, tail-wags, wing-flutters, glances around, blinks -->
+      <g transform="translate(4,148) scale(.64)" opacity="0">
+        <animate attributeName="opacity" values="0;0;1;1" keyTimes="0;.515;.53;1" dur="31s" repeatCount="indefinite"/>
+        <g>
+          <animateTransform attributeName="transform" type="translate" values="0 0;0 1.5;0 0" dur="2.4s" repeatCount="indefinite"/>
+          <animateTransform attributeName="transform" type="translate" additive="sum" values="0 0;0 0;0 -5;0 0;0 -4;0 0;0 0" keyTimes="0;.5;.54;.58;.62;.66;1" dur="7.5s" repeatCount="indefinite"/>
+          <path fill="#e8402f" d="M34 80 C22 88 14 96 12 106 C24 102 34 96 42 90 Z">
+            <animateTransform attributeName="transform" type="rotate" values="0 34 84;0 34 84;10 34 84;-4 34 84;8 34 84;0 34 84;0 34 84" keyTimes="0;.3;.38;.46;.54;.62;1" dur="6s" repeatCount="indefinite"/>
+          </path>
+          <ellipse cx="62" cy="62" rx="32" ry="28" fill="url(#bodyg)"/>
+          <ellipse cx="72" cy="72" rx="17" ry="12" fill="#ffedd0"/>
+          <rect x="42" y="40" width="40" height="7" rx="3.5" fill="#231a4f"/>
+          <path fill="#ffb648" d="M92 52 L110 58 L92 64 Q95 58 92 52 Z"/>
+          <ellipse cx="86" cy="66" rx="4.5" ry="2.8" fill="#ff9d94" opacity=".8"/>
+          <circle cx="80" cy="46" r="14" fill="#fff" stroke="#231a4f" stroke-width="4"/>
+          <path fill="#e8402f" d="M38 58 C28 64 28 76 40 82 C52 86 60 78 56 68 C52 60 44 55 38 58 Z">
+            <animateTransform attributeName="transform" type="rotate" values="0 56 64;0 56 64;34 56 64;6 56 64;28 56 64;0 56 64;0 56 64" keyTimes="0;.5;.57;.64;.71;.78;1" dur="7s" repeatCount="indefinite"/>
+          </path>
+          <path d="M54 90 v8 M66 90 v8" stroke="#ffb648" stroke-width="3.5" stroke-linecap="round"/>
+          <circle cx="84" cy="48" r="5" fill="#231a4f">
+            <animate attributeName="cx" values="84;84;77;77;84;84" keyTimes="0;.25;.35;.65;.75;1" dur="8s" repeatCount="indefinite"/>
+          </circle>
+          <circle cx="82" cy="46" r="2" fill="#fff"/>
+          <circle cx="80" cy="46" r="12.5" fill="#ff7a5c" opacity="0">
+            <animate attributeName="opacity" values="0;0;1;0;0" keyTimes="0;.85;.9;.95;1" dur="3.4s" repeatCount="indefinite"/>
+          </circle>
+        </g>
+      </g>
+      <ellipse class="cloud" cx="90" cy="330" rx="90" ry="26" fill="rgba(255,255,255,.10)"/>
+      <ellipse class="cloud" style="animation-delay:2s" cx="700" cy="290" rx="110" ry="30" fill="rgba(255,255,255,.09)"/>
+      <ellipse class="cloud" style="animation-delay:4.5s" cx="640" cy="470" rx="150" ry="36" fill="rgba(255,255,255,.07)"/>
+    </svg>
+    <header class="site on-dark" style="position:relative">
+      <div class="logo"><span class="mark">✈</span>Deal<span style="font-weight:400">Radar</span></div>
+      <nav class="site"><a href="#">Today's deals</a><a href="#" class="pill"><span class="bell">🔔</span> Watchlist</a></nav>
+    </header>
+    <div class="hero-inner">
+      <h1>Is that flight price<br>actually <span class="zing">a steal?<svg viewBox="0 0 120 10" preserveAspectRatio="none"><path d="M2 7 Q 20 1, 40 6 T 80 5 T 118 6" fill="none" stroke="#ffb648" stroke-width="3" stroke-linecap="round"/></svg></span></h1>
+      <p>We track fares every day, so you know a good price when you see one.</p>
+      <div class="searchcard">
+        <div class="fields">
+          <div class="field"><label>From</label><input type="text" value="Singapore (SIN)" aria-label="From"></div>
+          <div class="field"><label>To</label><input type="text" placeholder="Anywhere fun ✨" aria-label="To"></div>
+          <div class="field"><label>Depart</label><input type="text" placeholder="12 Sep" aria-label="Depart"></div>
+          <div class="field"><label>Return</label><input type="text" placeholder="+ Add" aria-label="Return"></div>
+        </div>
+        <button>Check the price →</button>
+      </div>
+      <div class="hot-chips">
+        <a href="#">🗼 Tokyo <b>fr S$312</b></a>
+        <a href="#">🏝️ Bali <b>fr S$168</b></a>
+        <a href="#">🇰🇷 Seoul <b>fr S$385</b></a>
+        <a href="#">🌆 Bangkok <b>fr S$142</b></a>
+      </div>
+      <div class="trustbar">
+        <span>📈 60 days of real price tracking</span>
+        <span>🤝 Commission, never a markup</span>
+        <span>⚡ Verdict in one search</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<div class="mock-label">Mockup v2 · 2 — Search results (verdict-first)</div>
+<div class="frame">
+  <div class="qbar"><b>SIN → HND (Tokyo)</b> · 12–19 Sep · 1 adult, economy <a href="#" style="color:var(--lilac);font-weight:700">edit</a></div>
+
+  <div class="verdict-card">
+    <div>
+      <span class="badge grab"><svg class="flame" width="15" height="15" viewBox="0 0 24 24" aria-hidden="true"><use href="#fire"/></svg> GRAB IT — 38% below normal</span>
+      <div class="big">S$312 <small>round trip</small></div>
+      <div class="sub">Usually <b>S$505</b> for these dates. Cheapest we've seen in 60 days.</div>
+    </div>
+    <svg class="spark" viewBox="0 0 180 60" aria-label="60-day price trend, currently at a low">
+      <defs><linearGradient id="sg" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#10b981" stop-opacity=".25"/><stop offset="1" stop-color="#10b981" stop-opacity="0"/>
+      </linearGradient></defs>
+      <polyline class="areafill" fill="url(#sg)" stroke="none" points="0,22 18,17 36,25 54,20 72,30 90,25 108,35 126,31 144,42 162,50 178,54 178,60 0,60"/>
+      <polyline class="drawline" pathLength="100" fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" points="0,22 18,17 36,25 54,20 72,30 90,25 108,35 126,31 144,42 162,50 178,54"/>
+      <circle cx="178" cy="54" r="5" fill="#059669"/><circle class="ping" cx="178" cy="54" r="9" fill="#059669"/>
+    </svg>
+  </div>
+
+  <div class="provider">
+    <div style="display:flex;align-items:center;gap:14px">
+      <div class="plogo" style="background:linear-gradient(135deg,#2563eb,#38bdf8)">Trip</div>
+      <div><span class="best-tag">BEST TOTAL PRICE</span><div class="name">Trip.com</div><div class="meta">✈ Direct · 7h 05m · total incl. taxes &amp; bags</div></div>
+    </div>
+    <div style="display:flex;align-items:center;gap:14px"><div class="price">S$312<small>total</small></div><a class="go" href="#">Go to deal →</a></div>
+  </div>
+  <div class="provider">
+    <div style="display:flex;align-items:center;gap:14px">
+      <div class="plogo" style="background:linear-gradient(135deg,#0d9488,#34d399)">Kiwi</div>
+      <div><div class="name">Kiwi.com</div><div class="meta">✈ Direct · 7h 05m · total incl. taxes &amp; bags</div></div>
+    </div>
+    <div style="display:flex;align-items:center;gap:14px"><div class="price">S$318<small>total</small></div><a class="go" href="#">Go to deal →</a></div>
+  </div>
+  <div class="provider">
+    <div style="display:flex;align-items:center;gap:14px">
+      <div class="plogo" style="background:linear-gradient(135deg,#7c3aed,#c084fc)">Avia</div>
+      <div><div class="name">Aviasales</div><div class="meta">↩ 1 stop (TPE) · 11h 40m · total incl. taxes &amp; bags</div></div>
+    </div>
+    <div style="display:flex;align-items:center;gap:14px"><div class="price">S$334<small>total</small></div><a class="go" href="#">Go to deal →</a></div>
+  </div>
+  <div class="stale">Prices checked 26 minutes ago · final price confirmed on the provider's site</div>
+
+  <h2 class="sec">Verdict states (all four, for sign-off)</h2>
+  <div class="states">
+    <div class="state-chip"><span class="badge grab"><svg class="flame" width="15" height="15" viewBox="0 0 24 24" aria-hidden="true"><use href="#fire"/></svg> GRAB IT — 38% below</span><br>≥15% under 60-day median. Green gradient ring on card.</div>
+    <div class="state-chip"><span class="badge fair">👌 FAIR PRICE</span><br>Within ±15% of normal. Neutral framing: "book if the dates matter".</div>
+    <div class="state-chip"><span class="badge high"><svg class="arrow-up" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><use href="#trend-up"/></svg> HIGH — 22% above</span><br>≥15% over median. Push "watch this route" instead of the click-out.</div>
+    <div class="state-chip"><span class="badge nodata">🔭 NO VERDICT YET</span><br>&lt;14 days of history. Honest label + watch capture below.</div>
+  </div>
+
+  <div class="watch">
+    <div class="wt"><span class="bell">🔔</span> Not sure? We'll watch it for you.</div>
+    <div class="ws">Get an email the moment SIN→HND drops below normal.</div>
+    <div class="row"><input type="email" placeholder="you@email.com"><button>Watch this route</button></div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<div class="mock-label">Mockup v2 · 2b — Specific flights list (below the verdict card)</div>
+<div class="frame">
+  <div class="qbar"><b>SIN → HND (Tokyo)</b> · 12–19 Sep <span class="chip">Direct only ✓</span> <span class="chip">Sort: cheapest ▾</span></div>
+
+  <div class="flight">
+    <div class="who">
+      <div class="airline"><span class="mono" style="background:linear-gradient(135deg,#facc15,#f59e0b)">TR</span>Scoot</div>
+      <div class="via">TR808 · via Trip.com</div>
+    </div>
+    <div class="leg">
+      <div class="t">08:05<small>SIN</small></div>
+      <div class="path"><div class="dur">7h 05m</div><div class="line"></div><div class="stops direct">DIRECT</div></div>
+      <div class="t">16:10<small>HND</small></div>
+    </div>
+    <div class="right"><div><span class="best-tag">CHEAPEST</span><div class="price">S$312<small>total</small></div></div><a class="go" href="#">Go →</a></div>
+  </div>
+
+  <div class="flight">
+    <div class="who">
+      <div class="airline"><span class="mono" style="background:linear-gradient(135deg,#0f766e,#14b8a6)">CX</span>Cathay Pacific</div>
+      <div class="via">CX714 · via Aviasales</div>
+    </div>
+    <div class="leg">
+      <div class="t">11:20<small>SIN</small></div>
+      <div class="path"><div class="dur">8h 45m</div><div class="line"></div><div class="stops one">1 STOP · HKG</div></div>
+      <div class="t">21:05<small>HND</small></div>
+    </div>
+    <div class="right"><div class="price">S$334<small>+S$22 vs cheapest</small></div><a class="go" href="#">Go →</a></div>
+  </div>
+
+  <div class="flight">
+    <div class="who">
+      <div class="airline"><span class="mono" style="background:linear-gradient(135deg,#1d4ed8,#3b82f6)">SQ</span>Singapore Airlines</div>
+      <div class="via">SQ632 · via Trip.com</div>
+    </div>
+    <div class="leg">
+      <div class="t">09:25<small>SIN</small></div>
+      <div class="path"><div class="dur">7h 05m</div><div class="line"></div><div class="stops direct">DIRECT</div></div>
+      <div class="t">17:30<small>HND</small></div>
+    </div>
+    <div class="right"><div class="price">S$389<small>+S$77 vs cheapest</small></div><a class="go" href="#">Go →</a></div>
+  </div>
+
+  <div class="stale">The verdict card (mockup 2) sits above this list — verdict is per route+dates; each flight shows its own total price.</div>
+</div>
+
+<!-- ============================================================ -->
+<div class="mock-label">Mockup v2 · 3 — Route page (SEO surface) · /flights/singapore-to-tokyo</div>
+<div class="frame">
+  <header class="site">
+    <div class="logo"><span class="mark">✈</span>Deal<span style="font-weight:400">Radar</span></div>
+    <nav class="site"><a href="#">Today's deals</a><a href="#">Watchlist</a></nav>
+  </header>
+  <div class="pad">
+    <h1 class="route-h">Singapore → Tokyo 🗼</h1>
+    <div style="margin-top:8px"><span class="badge grab"><svg class="flame" width="15" height="15" viewBox="0 0 24 24" aria-hidden="true"><use href="#fire"/></svg> Cheap right now — 24% below the 60-day normal</span></div>
+  </div>
+  <div class="statrow">
+    <div class="stat"><div class="k">Typical price</div><div class="v">S$505</div></div>
+    <div class="stat"><div class="k">60-day low</div><div class="v" style="color:var(--grab)">S$298</div></div>
+    <div class="stat"><div class="k">60-day high</div><div class="v" style="color:var(--high)">S$687</div></div>
+    <div class="stat"><div class="k">Best today</div><div class="v">S$384</div></div>
+  </div>
+  <div class="chart-wrap">
+    <h3>Cheapest round-trip found each day — last 60 days</h3>
+    <div class="note">Travel window: next 3 months · updated daily</div>
+    <svg viewBox="0 0 640 170" width="100%" aria-label="60-day price history chart">
+      <defs><linearGradient id="cg" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#8b5cf6" stop-opacity=".22"/><stop offset="1" stop-color="#8b5cf6" stop-opacity="0"/>
+      </linearGradient></defs>
+      <line x1="0" y1="80" x2="640" y2="80" stroke="#cbd5e1" stroke-dasharray="5 5"/>
+      <text x="6" y="72" font-size="11" font-weight="700" fill="#8b7fb8">median S$505</text>
+      <polyline class="areafill" fill="url(#cg)" stroke="none"
+        points="0,60 40,52 80,68 120,55 160,75 200,63 240,88 280,72 320,95 360,84 400,105 440,92 480,118 520,108 560,128 600,138 640,142 640,170 0,170"/>
+      <polyline class="drawline" pathLength="100" fill="none" stroke="#8b5cf6" stroke-width="3" stroke-linecap="round"
+        points="0,60 40,52 80,68 120,55 160,75 200,63 240,88 280,72 320,95 360,84 400,105 440,92 480,118 520,108 560,128 600,138 640,142"/>
+      <circle cx="640" cy="142" r="6" fill="#059669"/><circle class="ping" cx="640" cy="142" r="11" fill="#059669"/>
+      <text x="560" y="160" font-size="11" font-weight="800" fill="#059669">today</text>
+    </svg>
+  </div>
+  <div class="provider">
+    <div style="display:flex;align-items:center;gap:14px">
+      <div class="plogo" style="background:linear-gradient(135deg,#2563eb,#38bdf8)">Trip</div>
+      <div><span class="best-tag">BEST TOTAL PRICE TODAY</span><div class="name">Trip.com — S$384 · late Oct dates</div><div class="meta">checked 1h ago</div></div>
+    </div>
+    <a class="go" href="#">Go to deal →</a>
+  </div>
+  <div class="watch" style="margin-top:8px">
+    <div class="wt"><span class="bell">🔔</span> Price-drop alerts for this route</div>
+    <div class="ws">Free · one-click unsubscribe · we only email when it's actually cheap.</div>
+    <div class="row"><input type="email" placeholder="you@email.com"><button>Watch this route</button></div>
+  </div>
+  <div class="faq">
+    <h3>Singapore → Tokyo: what the data says</h3>
+    <p><b>When is it cheapest to book?</b> Prices for this route have dipped below S$350 four times in the last 60 days, usually mid-week…</p>
+    <p><b>Which month is cheapest to fly?</b> Based on tracked fares, late October averages 18% below the yearly norm…</p>
+    <p style="margin:0;font-size:12px">(SEO copy auto-generated from real snapshot data at build — never boilerplate.)</p>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<div class="mock-label">Mockup v2 · 4 — Deals feed (secondary surface) · /deals</div>
+<div class="frame">
+  <header class="site">
+    <div class="logo"><span class="mark">✈</span>Deal<span style="font-weight:400">Radar</span></div>
+    <nav class="site"><a href="#">Search</a><a href="#">Watchlist</a></nav>
+  </header>
+  <h2 class="sec">Today's biggest drops from Singapore <svg class="flame" width="19" height="19" viewBox="0 0 24 24" aria-hidden="true"><use href="#fire"/></svg></h2>
+  <div class="sub">Fresh fares, checked against 60 days of history. Blink and they're gone.</div>
+
+  <div class="deal-card">
+    <div class="dest" style="background:linear-gradient(135deg,#34d399,#0ea5e9)">🏝️</div>
+    <div style="flex:1"><span class="badge grab"><svg class="flame" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><use href="#fire"/></svg> 41% below normal</span><div class="route">SIN → Bali (DPS)</div><div class="when">Nov travel · found 3h ago</div></div>
+    <div style="text-align:right;display:flex;align-items:center;gap:14px"><div class="p">S$168<small>S$285</small></div><a class="go" href="#">Go →</a></div>
+  </div>
+  <div class="deal-card">
+    <div class="dest" style="background:linear-gradient(135deg,#f472b6,#8b5cf6)">🗼</div>
+    <div style="flex:1"><span class="badge grab"><svg class="flame" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><use href="#fire"/></svg> 38% below normal</span><div class="route">SIN → Tokyo (HND)</div><div class="when">Sep travel · found 6h ago</div></div>
+    <div style="text-align:right;display:flex;align-items:center;gap:14px"><div class="p">S$312<small>S$505</small></div><a class="go" href="#">Go →</a></div>
+  </div>
+  <div class="deal-card">
+    <div class="dest" style="background:linear-gradient(135deg,#fb923c,#f43f5e)">🌸</div>
+    <div style="flex:1"><span class="badge grab"><svg class="flame" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><use href="#fire"/></svg> 29% below normal</span><div class="route">SIN → Seoul (ICN)</div><div class="when">Oct travel · found 1d ago</div></div>
+    <div style="text-align:right;display:flex;align-items:center;gap:14px"><div class="p">S$385<small>S$540</small></div><a class="go" href="#">Go →</a></div>
+  </div>
+
+  <div class="watch" style="margin-top:6px">
+    <div class="wt">☕ Get these in your inbox every morning</div>
+    <div class="row"><input type="email" placeholder="you@email.com"><button>Subscribe free</button></div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<div class="mock-label">Mockup v2 · 5 — Meet "Radar" — brand mascot (for sign-off)</div>
+<div class="frame">
+  <h2 class="sec" style="padding-top:20px">One bird, four moods — mapped to the verdict states</h2>
+  <div class="sub">A chubby coral swift with radar goggles. He scouts fares so you don't have to.</div>
+  <div class="m-grid">
+
+    <div class="m-card">
+      <svg class="pose" viewBox="0 0 120 120" width="104" height="104" aria-label="Radar — default scout pose, blinking">
+        <use href="#bird-base"/>
+        <circle cx="84" cy="48" r="6" fill="#231a4f"/>
+        <circle cx="82" cy="46" r="2" fill="#fff"/>
+        <circle cx="80" cy="46" r="12.5" fill="#ff7a5c" opacity="0">
+          <animate attributeName="opacity" values="0;0;1;0;0" keyTimes="0;.85;.9;.95;1" dur="3.8s" repeatCount="indefinite"/>
+        </circle>
+      </svg>
+      <div><span class="badge nodata">SCOUT · default</span></div>
+      <div class="cap">Hero, headers, loading states. Blinks, flaps, minds his business.</div>
+    </div>
+
+    <div class="m-card">
+      <svg class="pose" viewBox="0 0 120 120" width="104" height="104" aria-label="Radar — deal spotted, goggle pinging">
+        <circle cx="80" cy="46" r="16" fill="none" stroke="#10b981" stroke-width="2.5">
+          <animate attributeName="r" values="15;32" dur="1.4s" repeatCount="indefinite"/>
+          <animate attributeName="opacity" values=".9;0" dur="1.4s" repeatCount="indefinite"/>
+        </circle>
+        <circle cx="80" cy="46" r="16" fill="none" stroke="#10b981" stroke-width="2">
+          <animate attributeName="r" values="15;32" dur="1.4s" begin=".7s" repeatCount="indefinite"/>
+          <animate attributeName="opacity" values=".7;0" dur="1.4s" begin=".7s" repeatCount="indefinite"/>
+        </circle>
+        <use href="#bird-base"/>
+        <polygon fill="#ffb648" points="80,38.5 82,44 87.5,44.5 83.5,48 84.8,53.5 80,50.5 75.2,53.5 76.5,48 72.5,44.5 78,44">
+          <animateTransform attributeName="transform" type="rotate" values="-8 80 46;8 80 46;-8 80 46" dur="1s" repeatCount="indefinite"/>
+        </polygon>
+      </svg>
+      <div><span class="badge grab"><svg class="flame" width="12" height="12" viewBox="0 0 24 24" aria-hidden="true"><use href="#fire"/></svg> GRAB IT</span></div>
+      <div class="cap">Deal spotted — goggle pings like a radar, star in his eye. Sits beside the verdict card.</div>
+    </div>
+
+    <div class="m-card">
+      <svg class="pose" viewBox="0 0 120 120" width="104" height="104" aria-label="Radar — price too high, unimpressed side-eye">
+        <use href="#bird-base"/>
+        <circle cx="84" cy="50" r="4.5" fill="#231a4f"/>
+        <path d="M66 46 A14 14 0 0 1 94 46 L94 47 L66 47 Z" fill="#ff7a5c"/>
+        <line x1="67" y1="47" x2="93" y2="47" stroke="#231a4f" stroke-width="2.5" stroke-linecap="round"/>
+        <text x="96" y="30" font-size="15" font-weight="800" fill="#e11d48">▲
+          <animate attributeName="y" values="32;26;32" dur="1.2s" repeatCount="indefinite"/>
+          <animate attributeName="opacity" values=".4;1;.4" dur="1.2s" repeatCount="indefinite"/>
+        </text>
+      </svg>
+      <div><span class="badge high"><svg class="arrow-up" width="12" height="12" viewBox="0 0 24 24" aria-hidden="true"><use href="#trend-up"/></svg> HIGH</span></div>
+      <div class="cap">Price too high — unimpressed side-eye. "Watch it instead," he says.</div>
+    </div>
+
+    <div class="m-card">
+      <svg class="pose" viewBox="0 0 120 120" width="104" height="104" aria-label="Radar — asleep, still gathering data">
+        <use href="#bird-base"/>
+        <circle cx="80" cy="46" r="12.5" fill="#ff7a5c"/>
+        <path d="M72 48 Q80 55 88 48" fill="none" stroke="#231a4f" stroke-width="2.5" stroke-linecap="round"/>
+        <text x="96" y="30" font-size="13" font-weight="800" fill="#8b7fb8">z<animate attributeName="opacity" values="0;1;0" dur="2.4s" repeatCount="indefinite"/></text>
+        <text x="103" y="21" font-size="10" font-weight="800" fill="#8b7fb8">z<animate attributeName="opacity" values="0;1;0" dur="2.4s" begin=".5s" repeatCount="indefinite"/></text>
+        <text x="109" y="14" font-size="8" font-weight="800" fill="#8b7fb8">z<animate attributeName="opacity" values="0;1;0" dur="2.4s" begin="1s" repeatCount="indefinite"/></text>
+      </svg>
+      <div><span class="badge nodata">🔭 NO VERDICT YET</span></div>
+      <div class="cap">Not enough history — napping while the tracker gathers 14 days of data.</div>
+    </div>
+
+  </div>
+  <div class="stale">Every pose shares one base rig (same coordinates) → the artwork ports 1:1 into a Rive/Lottie rig later for richer clips.</div>
+</div>
+
+<!-- ============================================================ -->
+<div class="mock-label">Mockup v2 · 6 — Instant alert email (600px)</div>
+<div class="email-frame">
+  <div class="email-head">
+    <div class="eyebrow">✈ DealRadar · Price alert</div>
+    <div class="h">Tokyo just got cheap <svg class="flame" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><use href="#fire"/></svg></div>
+  </div>
+  <div class="email-body">
+    <div class="deal">
+      <span class="badge grab"><svg class="flame" width="15" height="15" viewBox="0 0 24 24" aria-hidden="true"><use href="#fire"/></svg> GRAB IT — 38% below normal</span>
+      <div style="font-size:30px;font-weight:800;letter-spacing:-.02em;margin-top:10px">S$312 <span style="font-size:14px;color:#6f6795;font-weight:600">round trip · usually S$505</span></div>
+      <div style="font-size:13.5px;font-weight:600;color:#6f6795;margin-top:6px">SIN → HND · 12–19 Sep · direct · checked 14 minutes ago. Drops like this lasted under 36 hours on average.</div>
+      <a class="email-cta" href="#">See the deal →</a>
+    </div>
+    <div style="font-size:12.5px;font-weight:600;color:#8b7fb8">You're watching this route. Prices move fast — always confirm the final total on the provider's site.</div>
+  </div>
+  <div class="email-foot">DealRadar · You subscribed on 8 Jul 2026 · <a href="#">Unsubscribe with one click</a> · <a href="#">Manage watched routes</a></div>
+</div>
+
+</body>
+</html>

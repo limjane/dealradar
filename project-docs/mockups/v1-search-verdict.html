@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DealRadar — Mockup v1 (search-first, verdict badges)</title>
+<style>
+  :root{
+    --ink:#0f172a; --ink-soft:#475569; --line:#e2e8f0; --bg:#f8fafc; --card:#ffffff;
+    --brand:#0e7490; --brand-ink:#ffffff;
+    --grab:#15803d; --grab-bg:#dcfce7;
+    --fair:#a16207; --fair-bg:#fef9c3;
+    --high:#b91c1c; --high-bg:#fee2e2;
+    --nodata:#475569; --nodata-bg:#e2e8f0;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;background:#e8edf2;color:var(--ink);line-height:1.45;padding-bottom:80px}
+  .mock-label{max-width:760px;margin:48px auto 12px;font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#64748b;padding:0 16px}
+  .frame{max-width:760px;margin:0 auto;background:var(--bg);border:1px solid var(--line);border-radius:14px;overflow:hidden;box-shadow:0 2px 10px rgba(15,23,42,.07)}
+  header.site{display:flex;justify-content:space-between;align-items:center;padding:14px 20px;background:var(--card);border-bottom:1px solid var(--line)}
+  .logo{font-weight:800;font-size:18px;color:var(--brand)}
+  .logo span{color:var(--ink)}
+  nav.site a{font-size:14px;color:var(--ink-soft);text-decoration:none;margin-left:18px}
+  .pad{padding:20px}
+  /* verdict badges */
+  .badge{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:700;padding:4px 12px;border-radius:999px}
+  .badge.grab{background:var(--grab-bg);color:var(--grab)}
+  .badge.fair{background:var(--fair-bg);color:var(--fair)}
+  .badge.high{background:var(--high-bg);color:var(--high)}
+  .badge.nodata{background:var(--nodata-bg);color:var(--nodata)}
+  /* search hero */
+  .hero{padding:56px 20px 64px;text-align:center;background:linear-gradient(180deg,#f0f9ff 0%,var(--bg) 100%)}
+  .hero h1{font-size:30px;font-weight:800;margin-bottom:6px}
+  .hero p{color:var(--ink-soft);margin-bottom:28px;font-size:16px}
+  .searchbox{display:flex;flex-wrap:wrap;gap:8px;max-width:640px;margin:0 auto;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px;box-shadow:0 4px 16px rgba(15,23,42,.08)}
+  .searchbox input{flex:1 1 130px;border:1px solid var(--line);border-radius:8px;padding:12px;font-size:15px}
+  .searchbox button{flex:1 0 100%;background:var(--brand);color:var(--brand-ink);border:0;border-radius:8px;padding:13px;font-size:16px;font-weight:700;cursor:pointer}
+  @media(min-width:560px){.searchbox button{flex:0 0 auto;padding:13px 28px}}
+  .trust{margin-top:16px;font-size:13px;color:var(--ink-soft)}
+  /* results */
+  .qbar{padding:14px 20px;background:var(--card);border-bottom:1px solid var(--line);font-size:14px;color:var(--ink-soft)}
+  .qbar b{color:var(--ink)}
+  .verdict-card{background:var(--card);border:1px solid var(--line);border-left:5px solid var(--grab);border-radius:12px;padding:18px;margin:16px 20px;display:flex;flex-wrap:wrap;gap:14px;align-items:center;justify-content:space-between}
+  .verdict-card .big{font-size:32px;font-weight:800}
+  .verdict-card .sub{font-size:14px;color:var(--ink-soft);margin-top:2px}
+  .spark{flex:0 0 150px}
+  .provider{display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin:10px 20px}
+  .provider .name{font-weight:700;font-size:15px}
+  .provider .meta{font-size:12.5px;color:var(--ink-soft)}
+  .provider .price{font-size:19px;font-weight:800;text-align:right}
+  .provider .price small{display:block;font-size:11px;font-weight:500;color:var(--ink-soft)}
+  .go{background:var(--brand);color:#fff;text-decoration:none;font-size:14px;font-weight:700;padding:9px 16px;border-radius:8px;white-space:nowrap}
+  .best-tag{font-size:11px;font-weight:800;color:var(--grab);letter-spacing:.05em}
+  .stale{font-size:12px;color:var(--ink-soft);text-align:center;padding:8px 20px 20px}
+  .states{display:flex;flex-wrap:wrap;gap:10px;padding:0 20px 20px}
+  .state-chip{flex:1 1 160px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px;font-size:13px;color:var(--ink-soft)}
+  .state-chip .badge{margin-bottom:6px}
+  /* watch capture */
+  .watch{margin:16px 20px;background:#f0f9ff;border:1px dashed var(--brand);border-radius:12px;padding:16px;text-align:center}
+  .watch .row{display:flex;gap:8px;max-width:420px;margin:12px auto 0}
+  .watch input{flex:1;border:1px solid var(--line);border-radius:8px;padding:11px;font-size:14px}
+  .watch button{background:var(--brand);color:#fff;border:0;border-radius:8px;padding:11px 18px;font-weight:700;cursor:pointer}
+  /* route page chart */
+  .chart-wrap{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px;margin:16px 20px}
+  .chart-wrap h3{font-size:15px;margin-bottom:4px}
+  .chart-wrap .note{font-size:12.5px;color:var(--ink-soft);margin-bottom:10px}
+  .faq{margin:0 20px 20px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px}
+  .faq h3{font-size:15px;margin-bottom:10px}
+  .faq p{font-size:13.5px;color:var(--ink-soft);margin-bottom:10px}
+  .faq b{color:var(--ink)}
+  /* feed */
+  .deal-card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;margin:12px 20px;display:flex;justify-content:space-between;gap:12px;align-items:center}
+  .deal-card .route{font-weight:800;font-size:16px}
+  .deal-card .when{font-size:12.5px;color:var(--ink-soft)}
+  .deal-card .p{font-size:22px;font-weight:800}
+  /* email */
+  .email-frame{max-width:600px;margin:0 auto;background:#fff;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  .email-head{background:var(--brand);color:#fff;padding:16px 20px;font-weight:800}
+  .email-body{padding:20px}
+  .email-body .deal{border:1px solid var(--line);border-radius:10px;padding:14px;margin-bottom:12px}
+  .email-cta{display:block;background:var(--brand);color:#fff;text-align:center;text-decoration:none;font-weight:700;border-radius:8px;padding:12px;margin-top:8px}
+  .email-foot{padding:14px 20px;font-size:11.5px;color:var(--ink-soft);border-top:1px solid var(--line)}
+  h2.sec{font-size:17px;font-weight:800;padding:20px 20px 4px}
+</style>
+</head>
+<body>
+
+<!-- ============================================================ -->
+<div class="mock-label">Mockup 1 — Home / Search (the front door)</div>
+<div class="frame">
+  <header class="site">
+    <div class="logo">Deal<span>Radar</span></div>
+    <nav class="site"><a href="#">Today's deals</a><a href="#">Watchlist</a></nav>
+  </header>
+  <div class="hero">
+    <h1>Is that flight price actually good?</h1>
+    <p>Search anywhere else. Check here before you pay.</p>
+    <div class="searchbox">
+      <input type="text" value="Singapore (SIN)" aria-label="From">
+      <input type="text" placeholder="To — city or airport" aria-label="To">
+      <input type="text" placeholder="Depart" aria-label="Depart">
+      <input type="text" placeholder="Return (optional)" aria-label="Return">
+      <button>Check the price</button>
+    </div>
+    <div class="trust">Verdicts from 60 days of real price tracking · We earn a commission if you book — never a markup</div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<div class="mock-label">Mockup 2 — Search results (verdict-first)</div>
+<div class="frame">
+  <div class="qbar"><b>SIN → HND (Tokyo)</b> · 12–19 Sep · 1 adult, economy &nbsp;·&nbsp; <a href="#">edit</a></div>
+
+  <div class="verdict-card">
+    <div>
+      <span class="badge grab">▼ GRAB IT — 38% below normal</span>
+      <div class="big">S$312</div>
+      <div class="sub">Typical price for these dates: <b>S$505</b>. Cheapest we've seen in 60 days.</div>
+    </div>
+    <svg class="spark" viewBox="0 0 150 48" aria-label="60-day price trend, currently at a low">
+      <polyline fill="none" stroke="#94a3b8" stroke-width="2"
+        points="0,18 15,14 30,20 45,16 60,24 75,20 90,28 105,25 120,34 135,40 148,43"/>
+      <circle cx="148" cy="43" r="4" fill="#15803d"/>
+    </svg>
+  </div>
+
+  <div class="provider">
+    <div><div class="best-tag">BEST TOTAL PRICE</div><div class="name">Trip.com</div><div class="meta">Direct · 7h 05m · total incl. taxes &amp; bags</div></div>
+    <div style="display:flex;align-items:center;gap:14px"><div class="price">S$312<small>total</small></div><a class="go" href="#">Go to deal →</a></div>
+  </div>
+  <div class="provider">
+    <div><div class="name">Kiwi.com</div><div class="meta">Direct · 7h 05m · total incl. taxes &amp; bags</div></div>
+    <div style="display:flex;align-items:center;gap:14px"><div class="price">S$318<small>total</small></div><a class="go" href="#">Go to deal →</a></div>
+  </div>
+  <div class="provider">
+    <div><div class="name">Aviasales</div><div class="meta">1 stop (TPE) · 11h 40m · total incl. taxes &amp; bags</div></div>
+    <div style="display:flex;align-items:center;gap:14px"><div class="price">S$334<small>total</small></div><a class="go" href="#">Go to deal →</a></div>
+  </div>
+  <div class="stale">Prices checked 26 minutes ago · final price confirmed on the provider's site</div>
+
+  <h2 class="sec">Verdict states (all four, for sign-off)</h2>
+  <div class="states">
+    <div class="state-chip"><span class="badge grab">▼ GRAB IT — 38% below</span><br>≥15% under 60-day median. Green border on card.</div>
+    <div class="state-chip"><span class="badge fair">— FAIR PRICE</span><br>Within ±15% of normal. Neutral framing: "book if the dates matter".</div>
+    <div class="state-chip"><span class="badge high">▲ HIGH — 22% above</span><br>≥15% over median. Push "watch this route" instead of the click-out.</div>
+    <div class="state-chip"><span class="badge nodata">◌ NO VERDICT YET</span><br>&lt;14 days of history. Honest label + watch capture below.</div>
+  </div>
+
+  <div class="watch">
+    <b>Not sure? We'll watch it for you.</b>
+    <div style="font-size:13.5px;color:var(--ink-soft);margin-top:4px">Get an email the moment SIN→HND drops below normal.</div>
+    <div class="row"><input type="email" placeholder="you@email.com"><button>Watch this route</button></div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<div class="mock-label">Mockup 2b — Specific flights list (Skyscanner-style, below the verdict card)</div>
+<div class="frame">
+  <div class="qbar"><b>SIN → HND (Tokyo)</b> · 12–19 Sep · 1 adult, economy &nbsp;·&nbsp; <span style="background:#e2e8f0;border-radius:999px;padding:3px 10px;font-size:12px;font-weight:700">Direct only ✓</span> <span style="background:#e2e8f0;border-radius:999px;padding:3px 10px;font-size:12px;font-weight:700">Sort: cheapest ▾</span></div>
+  <div class="provider">
+    <div><div class="best-tag">CHEAPEST FOR THESE DATES</div><div class="name">Scoot · TR808</div><div class="meta">08:05 SIN → 16:10 HND · 7h 05m · direct · via Trip.com</div></div>
+    <div style="display:flex;align-items:center;gap:14px"><div class="price">S$312<small>total</small></div><a class="go" href="#">Go to deal →</a></div>
+  </div>
+  <div class="provider">
+    <div><div class="name">Cathay Pacific · CX714</div><div class="meta">11:20 SIN → 21:05 HND · 8h 45m · 1 stop (HKG) · via Aviasales</div></div>
+    <div style="display:flex;align-items:center;gap:14px"><div class="price">S$334<small>+S$22 vs cheapest</small></div><a class="go" href="#">Go to deal →</a></div>
+  </div>
+  <div class="provider">
+    <div><div class="name">Singapore Airlines · SQ632</div><div class="meta">09:25 SIN → 17:30 HND · 7h 05m · direct · via Trip.com</div></div>
+    <div style="display:flex;align-items:center;gap:14px"><div class="price">S$389<small>+S$77 vs cheapest</small></div><a class="go" href="#">Go to deal →</a></div>
+  </div>
+  <div class="stale">The verdict card (mockup 2) sits above this list — verdict is per route+dates; each flight shows its own total price. Cross-provider comparison per specific flight = phase 2.</div>
+</div>
+
+<!-- ============================================================ -->
+<div class="mock-label">Mockup 3 — Route page (SEO surface) · /flights/singapore-to-tokyo</div>
+<div class="frame">
+  <header class="site">
+    <div class="logo">Deal<span>Radar</span></div>
+    <nav class="site"><a href="#">Today's deals</a><a href="#">Watchlist</a></nav>
+  </header>
+  <div class="pad">
+    <h1 style="font-size:22px;font-weight:800">Singapore to Tokyo flight prices</h1>
+    <div style="margin-top:6px"><span class="badge grab">▼ Cheap right now — 24% below the 60-day normal</span></div>
+  </div>
+  <div class="chart-wrap">
+    <h3>Cheapest round-trip found each day — last 60 days</h3>
+    <div class="note">Median S$505 · Low S$298 · High S$687 · travel window: next 3 months</div>
+    <svg viewBox="0 0 640 160" width="100%" aria-label="60-day price history chart">
+      <line x1="0" y1="80" x2="640" y2="80" stroke="#cbd5e1" stroke-dasharray="4 4"/>
+      <text x="4" y="74" font-size="11" fill="#64748b">median S$505</text>
+      <polyline fill="rgba(14,116,144,.08)" stroke="none"
+        points="0,60 40,52 80,68 120,55 160,75 200,63 240,88 280,72 320,95 360,84 400,105 440,92 480,118 520,108 560,128 600,138 640,142 640,160 0,160"/>
+      <polyline fill="none" stroke="#0e7490" stroke-width="2.5"
+        points="0,60 40,52 80,68 120,55 160,75 200,63 240,88 280,72 320,95 360,84 400,105 440,92 480,118 520,108 560,128 600,138 640,142"/>
+      <circle cx="640" cy="142" r="5" fill="#15803d"/>
+    </svg>
+  </div>
+  <div class="provider">
+    <div><div class="best-tag">BEST TOTAL PRICE TODAY</div><div class="name">Trip.com — S$384 · late Oct dates</div><div class="meta">checked 1h ago</div></div>
+    <a class="go" href="#">Go to deal →</a>
+  </div>
+  <div class="watch" style="margin-top:6px">
+    <b>Price drop alerts for this route</b>
+    <div class="row"><input type="email" placeholder="you@email.com"><button>Watch this route</button></div>
+  </div>
+  <div class="faq">
+    <h3>Singapore → Tokyo: what we've learned from the data</h3>
+    <p><b>When is it cheapest to book?</b> Prices for this route have dipped below S$350 four times in the last 60 days, usually mid-week…</p>
+    <p><b>Which month is cheapest to fly?</b> Based on tracked fares, late October averages 18% below the yearly norm…</p>
+    <p style="margin:0;font-size:12px">(SEO copy auto-generated from real snapshot data at build — never boilerplate.)</p>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<div class="mock-label">Mockup 4 — Deals feed (secondary surface) · /deals</div>
+<div class="frame">
+  <header class="site">
+    <div class="logo">Deal<span>Radar</span></div>
+    <nav class="site"><a href="#">Search</a><a href="#">Watchlist</a></nav>
+  </header>
+  <h2 class="sec" style="padding-top:16px">Today's biggest drops from Singapore</h2>
+  <div class="deal-card">
+    <div><span class="badge grab">▼ 41% below normal</span><div class="route" style="margin-top:6px">SIN → Bali (DPS)</div><div class="when">Nov travel · found 3h ago · usually S$285</div></div>
+    <div style="text-align:right"><div class="p">S$168</div><a class="go" href="#">Go →</a></div>
+  </div>
+  <div class="deal-card">
+    <div><span class="badge grab">▼ 38% below normal</span><div class="route" style="margin-top:6px">SIN → Tokyo (HND)</div><div class="when">Sep travel · found 6h ago · usually S$505</div></div>
+    <div style="text-align:right"><div class="p">S$312</div><a class="go" href="#">Go →</a></div>
+  </div>
+  <div class="deal-card">
+    <div><span class="badge grab">▼ 29% below normal</span><div class="route" style="margin-top:6px">SIN → Seoul (ICN)</div><div class="when">Oct travel · found 1d ago · usually S$540</div></div>
+    <div style="text-align:right"><div class="p">S$385</div><a class="go" href="#">Go →</a></div>
+  </div>
+  <div class="watch" style="margin-top:4px">
+    <b>Get these in your inbox every morning</b>
+    <div class="row"><input type="email" placeholder="you@email.com"><button>Subscribe free</button></div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<div class="mock-label">Mockup 5 — Instant alert email (600px)</div>
+<div class="email-frame">
+  <div class="email-head">▼ Price drop: Singapore → Tokyo</div>
+  <div class="email-body">
+    <div class="deal">
+      <span class="badge grab">▼ GRAB IT — 38% below normal</span>
+      <div style="font-size:26px;font-weight:800;margin-top:8px">S$312 <span style="font-size:14px;color:#64748b;font-weight:500">round trip · usually S$505</span></div>
+      <div style="font-size:13.5px;color:#475569;margin-top:4px">12–19 Sep · direct · price checked 14 minutes ago. Drops like this on SIN→HND lasted under 36 hours on average.</div>
+      <a class="email-cta" href="#">See the deal →</a>
+    </div>
+    <div style="font-size:12.5px;color:#64748b">You're watching this route. Prices move fast — always confirm the final total on the provider's site.</div>
+  </div>
+  <div class="email-foot">DealRadar · You subscribed on 8 Jul 2026 · <a href="#">Unsubscribe with one click</a> · <a href="#">Manage watched routes</a></div>
+</div>
+
+</body>
+</html>
