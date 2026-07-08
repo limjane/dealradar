@@ -1,5 +1,25 @@
 # Decisions — DealRadar (append-only)
 
+## 2026-07-08 — D9: Scaffold implementation choices (task 2 DONE)
+User directive for the scaffold: "robust and scalable." Decisions within D3's frame:
+- **Monorepo** (`apps/web` + `worker/` in one repo) over two repos: shared DB schema
+  can't drift — schema.ts + worker/models.py change in one commit. Vercel (Root Dir
+  `apps/web`) and Render (`rootDir: worker` in render.yaml) both deploy subdirs natively.
+- **pnpm 9 workspace** (pinned via `packageManager`), lockfile committed. Node ≥20.
+- **Neon serverless HTTP driver** for web (fits Vercel serverless); worker uses plain
+  psycopg3 over postgres://. Same DB, two idiomatic clients.
+- **Versions**: Next 15.5.20 (15.1.x deprecated on registry — security), React 19,
+  Tailwind v4, drizzle-orm 0.38/kit 0.30, Python 3.12 + uv + ruff + pydantic v2.
+- **`eslint .` instead of `next lint`** (deprecated, removed in Next 16). Flat config.
+- **CSP ships day one but with 'unsafe-inline'** (Next/Tailwind inline bootstrap);
+  tighten to nonce-based CSP in task 9 (launch pass). All other §4.6 headers final.
+- **Deliberately NOT added** (anti-overbuild, per §3): no queue/Redis, no Docker, no
+  turborepo (2 packages don't need it), no shadcn/ui yet (lands with real UI, task 5).
+Verified locally: typecheck/lint/build green (web), ruff/format/pytest green (worker),
+placeholder page + all 6 security headers + zero console errors in browser preview.
+Deploys NOT yet live — needs user's GitHub/Vercel/Render/Neon accounts (see
+current_state.md handoff).
+
 ## 2026-07-08 — D7 + D8 SIGNED OFF: v2 design + mascot
 User signed off `mockups/v2-fun-travel.html` — fun/premium travel look (D7) and "Radar"
 the swift mascot incl. flight-and-perch hero routine, idle movements, four verdict-state
