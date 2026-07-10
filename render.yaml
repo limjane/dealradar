@@ -12,12 +12,9 @@ services:
     envVars:
       - key: DATABASE_URL
         sync: false
-      - key: AMADEUS_CLIENT_ID
+      # Travelpayouts Data API token (D10 — replaced Amadeus, gone 2026-07-17)
+      - key: TRAVELPAYOUTS_TOKEN
         sync: false
-      - key: AMADEUS_CLIENT_SECRET
-        sync: false
-      - key: AMADEUS_ENV
-        value: test
 
   - type: cron
     name: dealradar-score

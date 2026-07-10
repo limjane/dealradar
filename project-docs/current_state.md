@@ -2,45 +2,59 @@
 
 _Read this first each session; update it last. The blueprint lives in `foundation.md` — grep it, don't re-read it whole._
 
-**Last updated:** 2026-07-08 (task 2 scaffold BUILT + verified locally — D9. Deploys
-pending user accounts. Mascot-eye bug still with Sonnet session.)
+**Last updated:** 2026-07-10 (deploys mostly live; price provider pivoted Amadeus→Travelpayouts — D10.)
 
 ## Phase
-**BUILD.** Task 2 (scaffold) code-complete and committed (git repo initialized at
-`dealradar/`, branch `main`, conventional commits). Monorepo: `apps/web` (Next 15.5,
-TS strict, Tailwind v4, Drizzle schema + initial migration, security headers) +
-`worker/` (Python 3.12, uv, poll/score/alert cron stubs, Pydantic models, JSON logs) +
-`render.yaml` + GitHub Actions CI. All local gates green; placeholder page + headers
-verified in browser preview. See D9 for choices.
+**BUILD.** Task 2 (scaffold + deploy) all but done. Live services:
+- ✅ **GitHub**: `git@github.com:limjane/dealradar` (SSH; HTTPS PAT lacked `workflow` scope). `main` pushed.
+- ✅ **Neon**: project `dealradar` in ap-southeast-1; migration applied; all 6 tables verified. Pooled `DATABASE_URL` in `.env` (gitignored).
+- ✅ **Vercel**: https://dealradar-web-chi.vercel.app — placeholder page live, all 6 security headers verified (CSP/HSTS/nosniff/frame-deny). Root Dir `apps/web`, `DATABASE_URL` set.
+- 🟡 **Render**: blueprint deployed from `render.yaml`, builds green. BUT env still has **fake Amadeus vars** — must be swapped (see below). Crons only fire 21:00 UTC daily, so nothing has run yet.
 
-## Task 2 exit criteria — remaining (blocked on user accounts)
-"Deploys green on Vercel+Render with placeholder page" needs (README has exact steps):
-1. **GitHub**: create repo, push `dealradar/` (`git remote add origin … && git push -u origin main`)
-2. **Neon**: create project → set `DATABASE_URL` → run `pnpm db:migrate` once
-3. **Vercel**: import repo, Root Directory `apps/web`, env `DATABASE_URL`
-4. **Render**: Blueprints → connect repo (reads `render.yaml`) → set env vars
-Next session verifies deploys, then marks task 2 DONE and starts task 3 (worker polling
-— START EARLY: verdicts need ≥14 days of history by launch).
+## ⚠ Provider pivot — D10 (price source: Amadeus → Travelpayouts Data API)
+**Amadeus Self-Service portal is decommissioned 2026-07-17** (7 days out). Whole price
+layer moved to **Travelpayouts Data API** (`/v1/prices/calendar`), which is ALSO our
+affiliate network — one token for both. Env changed: `AMADEUS_*` → `TRAVELPAYOUTS_TOKEN`
+(+ `TRAVELPAYOUTS_MARKER` later). `.env`, `.env.example`, `render.yaml` all updated.
+Data is aggregated/cached, not live — fine for a deals/price-history engine. Full
+rationale + endpoint fit in decisions.md D10.
+
+## Blocking — user actions
+1. **Travelpayouts account (DealRadar's OWN — separate from TravelHub)**: sign up at
+   travelpayouts.com → Developers → copy API token → put in `.env` as `TRAVELPAYOUTS_TOKEN`.
+2. **Render env fix**: in Render dashboard, delete the 3 fake `AMADEUS_*` vars on both
+   cron services, add `TRAVELPAYOUTS_TOKEN` (real). (render.yaml already reflects this for
+   future syncs.) Push the updated render.yaml too so the blueprint matches.
+3. Push the doc/env/yaml changes from this session to GitHub (not yet committed).
+
+## Task 3 — worker polling (reworked around Travelpayouts)
+Goal unchanged: daily poll → `price_snapshots` for 10 test SG-outbound routes (SIN→BKK,
+DPS, HKG, TPE, ICN, NRT, MNL, SYD, LHR, PER). New shape:
+- `providers/PriceSource` adapter wraps Travelpayouts `GET /v1/prices/calendar`
+  (X-Access-Token header; per route, pull cheapest fare/day for next ~3 travel months).
+- One `price_snapshots` row per route×travel-month (or ×day — decide at build; calendar
+  returns per-day). ~30–90 rows/day; well under 10 req/s.
+- Build + verify pipeline works with a real token, then let daily history accrue.
+- **14-day history is a launch gate but too short for seasonality — beta-launch plan:**
+  ship basic "cheaper than rolling median" verdict, collect 30–60 days real data in beta,
+  upgrade to percentile/seasonal scoring post-launch. START EARLY (history has to accrue).
 
 ## What's locked (see decisions.md)
-- D1 affiliate link-out · D2 price-intelligence wedge · D3 stack · D4 search-first,
-  flights only · D5 specific-flights list · D6–D8 design + "Radar" mascot (v2 mockup =
-  build reference) · D9 scaffold choices (monorepo, pnpm, versions, CSP posture)
+- D1 affiliate link-out · D2 price-intelligence wedge · D3 stack · D4 search-first, flights
+  only · D5 specific-flights list · D6–D8 design + "Radar" mascot · D9 scaffold choices ·
+  **D10 price source = Travelpayouts Data API (replaced Amadeus)**
 - Blueprint: `foundation.md` · Mockup: `mockups/v2-fun-travel.html`
 
 ## Still open (non-blocking)
 - Seed market confirmation (assumed SG/SEA outbound), product name + domain
-- Task 0 user actions: domain+email, Travelpayouts signup, Amadeus key confirmation
+- Neon password is in this session's chat history — rotate before real launch (non-urgent).
 
 ## Open bug — mockup (assigned to a fresh Sonnet session)
 `mockups/v2-fun-travel.html`, hero: FLYING mascot's eye pupil not visible (perched pose
-fine). Structure: `<g class="flip">` wraps `<use href="#bird-base"/>` + pupil (84,48 r6)
-+ highlight + blink-lid (opacity 0 + SMIL). Tried: lid opacity 0, bigger pupil. Suspects:
-`.flip` transform-box/fill-box animation vs child rendering; `<use>` sibling paint order
-in animateMotion group; goggle-strap overdraw at flying scale. Fix eye only.
+fine). See prior notes — fix eye only.
 
 ## Next session
-Verify deploys (user does account steps above first) → task 2 DONE → task 3: worker
-Amadeus polling → `price_snapshots` for 10 test routes. Read this file + grep
-foundation.md §2/§3 (providers + data flow). Local dev note: pnpm via
-`corepack pnpm@9.15.0 …` (no global pnpm); uv via `python -m uv …`.
+User does the 3 blocking actions above → I commit/push session changes → verify Render
+cron runs against real Travelpayouts token → task 2 DONE → build task 3. Local dev note:
+pnpm via `corepack pnpm@9.15.0 …` (no global pnpm); migration needs root `.env` loaded
+(the `&` in DATABASE_URL breaks shell sourcing — export it quoted).

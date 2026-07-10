@@ -1,5 +1,32 @@
 # Decisions — DealRadar (append-only)
 
+## 2026-07-10 — D10: Price source pivot — Amadeus → Travelpayouts Data API (forced)
+**Trigger:** Amadeus **Self-Service portal is being decommissioned on 2026-07-17** (found
+while registering — 7 days' notice). D2/foundation §2 assumed Amadeus Self-Service as the
+flight-price source; that assumption is dead. (Amadeus *Enterprise* survives but is
+contract-based/heavyweight — wrong tier for this MVP.)
+**Decision:** Make **Travelpayouts Data API** (Aviasales) the primary `PriceSource`. This
+is the swap foundation §2 explicitly anticipated ("swapping Amadeus→Travelpayouts must
+touch only the adapter"). Consolidates two dependencies into one: Travelpayouts is *already*
+our affiliate network (D1), so one account/token now covers **both** price data and
+affiliate deep links — one less provider, key, and quota to manage.
+**Endpoint fit (verified 2026-07-10):** `GET /v1/prices/calendar` returns cheapest
+non-stop/1-stop/2-stop fare per day for a route+month (one-way or round-trip). Token via
+`X-Access-Token` header; 10 req/s; data cached 7 days server-side. Maps cleanly to the
+snapshot poller (one row per route×travel-month×day) and the verdict engine.
+**Known tradeoff (accepted):** Travelpayouts data is **aggregated/cached** (reflects what
+other users recently searched), not a fresh live per-query quote like Amadeus. For a
+price-*history*/deals engine this is fine — verdicts run on trend/median, not on quoting a
+bookable seat. Live per-itinerary quoting (D5 phase-2 item) will still need a booking-grade
+source later; revisit then.
+**Separate from TravelHub:** DealRadar registers its **own** Travelpayouts account/token
+(kept isolated per the two-projects-separate rule). TravelHub hit the same Amadeus
+decommission but has different needs (hotels + live itinerary) — its provider is being
+re-decided independently; see TravelHub decisions.md 2026-07-10.
+**Env change:** `AMADEUS_CLIENT_ID/SECRET/ENV` → `TRAVELPAYOUTS_TOKEN` (+ `TRAVELPAYOUTS_MARKER`
+for affiliate links, lands with task 5). `.env.example`, `.env`, and `render.yaml` updated.
+**Task 3 reworked** around this endpoint (see current_state.md).
+
 ## 2026-07-08 — D9: Scaffold implementation choices (task 2 DONE)
 User directive for the scaffold: "robust and scalable." Decisions within D3's frame:
 - **Monorepo** (`apps/web` + `worker/` in one repo) over two repos: shared DB schema

@@ -66,14 +66,14 @@ affiliate ID. Revenue metrics: EPC (earnings per click), click-out rate, email l
 
 | Purpose | Primary | Notes |
 |---|---|---|
-| Flight price polling | Amadeus Self-Service API | Free tier; same account as TravelHub — monitor shared quota; upgrade to pay-as-you-go if polling 50 routes×daily exceeds it |
-| Affiliate deep links | Travelpayouts network | Aggregates Trip.com, Aviasales, Kiwi, Booking et al; one signup, many programs; instant-ish approval |
+| Flight price polling | **Travelpayouts Data API** (Aviasales) | ⚠ Amadeus Self-Service (original pick) decommissioned 2026-07-17 — see decisions.md D10. `/v1/prices/calendar` = cheapest fare/day per route+month; token auth, 10 req/s, 7-day server cache. Data is aggregated/cached, not live per-query — fine for a price-history/deals engine. |
+| Affiliate deep links | Travelpayouts network | **Same account/token as the price source above** (D10 — one signup covers both). Aggregates Trip.com, Aviasales, Kiwi, Booking et al; many programs; instant-ish approval |
 | Secondary affiliates | Skyscanner (via Impact), Booking direct, Expedia | Apply POST-launch only — they reject empty/new sites. Travelpayouts covers MVP revenue alone |
 | Email | Resend | Generous free tier, first-class DX, React email templates |
 
 **Rule:** all provider calls go through one `providers/` adapter layer (interface per
-capability: `PriceSource`, `DeepLinkBuilder`). Swapping Amadeus→Travelpayouts data API later
-must touch only the adapter.
+capability: `PriceSource`, `DeepLinkBuilder`). The Amadeus→Travelpayouts swap (D10, forced
+by the 2026-07-17 Self-Service decommission) touched only the adapter — as designed.
 
 ---
 
