@@ -5,9 +5,9 @@ from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
     database_url: str
-    amadeus_client_id: str = ""
-    amadeus_client_secret: str = ""
-    amadeus_env: str = "test"
+    # Travelpayouts Data API (D10 — replaced Amadeus, retired 2026-07-17).
+    travelpayouts_token: str = ""  # required to poll; empty is fine for DB-only jobs
+    travelpayouts_marker: str = ""  # affiliate partner id — used from task 5
     resend_api_key: str = ""
 
 

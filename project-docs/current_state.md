@@ -2,7 +2,7 @@
 
 _Read this first each session; update it last. The blueprint lives in `foundation.md` — grep it, don't re-read it whole._
 
-**Last updated:** 2026-07-10 (deploys mostly live; price provider pivoted Amadeus→Travelpayouts — D10.)
+**Last updated:** 2026-07-10 (deploys mostly live; provider pivot D10; task 3 code-complete + DB path verified, live poll pending token.)
 
 ## Phase
 **BUILD.** Task 2 (scaffold + deploy) all but done. Live services:
@@ -27,17 +27,22 @@ rationale + endpoint fit in decisions.md D10.
    future syncs.) Push the updated render.yaml too so the blueprint matches.
 3. Push the doc/env/yaml changes from this session to GitHub (not yet committed).
 
-## Task 3 — worker polling (reworked around Travelpayouts)
-Goal unchanged: daily poll → `price_snapshots` for 10 test SG-outbound routes (SIN→BKK,
-DPS, HKG, TPE, ICN, NRT, MNL, SYD, LHR, PER). New shape:
-- `providers/PriceSource` adapter wraps Travelpayouts `GET /v1/prices/calendar`
-  (X-Access-Token header; per route, pull cheapest fare/day for next ~3 travel months).
-- One `price_snapshots` row per route×travel-month (or ×day — decide at build; calendar
-  returns per-day). ~30–90 rows/day; well under 10 req/s.
-- Build + verify pipeline works with a real token, then let daily history accrue.
+## Task 3 — worker polling — CODE-COMPLETE, live run pending token
+Built (committed): `worker/providers/` (`PriceSource` protocol + `TravelpayoutsPriceSource`
+wrapping `GET /v1/prices/calendar`), `dates.next_travel_months`, `db.active_routes` +
+`db.insert_snapshots`, `seed_routes.py`, real `poll.py`. Choices in D11 (one row per
+route×travel-month = monthly cheapest, one-way, current month + next 2, httpx, per-route
+error isolation).
+**Verified:** 8 unit tests (adapter via httpx MockTransport + date wrap); DB write path
+against real Neon — **10 routes seeded** (SIN→BKK/DPS/HKG/TPE/ICN/NRT/MNL/SYD/PER/LHR),
+insert→readback→cleanup of a test snapshot OK; ruff lint+format clean.
+**NOT yet verified (needs token):** the live Travelpayouts HTTP call (auth + real response
+shape). Adapter codes to the documented contract — confirm on first real run.
+**First run next session:** with `TRAVELPAYOUTS_TOKEN` set, `python -m uv run python poll.py`
+→ expect ~30 snapshot rows (10 routes × 3 months). Then daily accrual builds history.
 - **14-day history is a launch gate but too short for seasonality — beta-launch plan:**
-  ship basic "cheaper than rolling median" verdict, collect 30–60 days real data in beta,
-  upgrade to percentile/seasonal scoring post-launch. START EARLY (history has to accrue).
+  ship basic "cheaper than rolling median" verdict (task 4), collect 30–60 days real data in
+  beta, upgrade to percentile/seasonal scoring post-launch. START EARLY (history has to accrue).
 
 ## What's locked (see decisions.md)
 - D1 affiliate link-out · D2 price-intelligence wedge · D3 stack · D4 search-first, flights

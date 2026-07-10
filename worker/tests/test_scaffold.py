@@ -12,7 +12,7 @@ def test_price_snapshot_validates() -> None:
         cabin="ECONOMY",
         price=Decimal("412.50"),
         currency="SGD",
-        source="amadeus",
+        source="travelpayouts",
     )
     assert snap.travel_month == "2026-09"
 

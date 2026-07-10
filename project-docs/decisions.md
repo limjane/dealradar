@@ -1,5 +1,22 @@
 # Decisions — DealRadar (append-only)
 
+## 2026-07-10 — D11: Task 3 build choices (poll granularity + HTTP client)
+Small choices made building the poller (under D10's frame):
+- **Snapshot granularity = one row per route×travel-month** (the cheapest fare found in
+  that month), NOT per-day. Matches the `price_snapshots.travel_month` schema and the deals
+  wedge ("cheapest to fly this month"). The calendar endpoint returns per-day; the adapter
+  takes the monthly min. Per-day would need a schema change — deferred unless the verdict
+  engine (task 4) needs finer signal.
+- **One-way fares** (`one_way=true`): a clean, consistent per-month minimum without
+  return-date combinatorics. Round-trip baselines can be added later if the UX needs them.
+- **Poll window = current month + next 2** (`MONTHS_AHEAD=3`) → 10 routes × 3 = 30 calls/day,
+  far under the 10 req/s limit.
+- **HTTP client = httpx** (added to worker deps): real timeouts + `MockTransport` for
+  network-free adapter tests. First non-stdlib runtime dep in the worker.
+- **Per-route failure isolation:** one route erroring is logged + skipped, run continues.
+Status: code-complete, unit-tested (8 tests), DB write path verified against Neon (10
+routes seeded). Live Travelpayouts call unverified until a token exists.
+
 ## 2026-07-10 — D10: Price source pivot — Amadeus → Travelpayouts Data API (forced)
 **Trigger:** Amadeus **Self-Service portal is being decommissioned on 2026-07-17** (found
 while registering — 7 days' notice). D2/foundation §2 assumed Amadeus Self-Service as the
