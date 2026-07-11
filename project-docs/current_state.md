@@ -92,7 +92,12 @@ shape). Adapter codes to the documented contract — confirm on first real run.
 fine). See prior notes — fix eye only.
 
 ## Next session
-User does the 3 blocking actions above → I commit/push session changes → verify Render
-cron runs against real Travelpayouts token → task 2 DONE → build task 3. Local dev note:
-pnpm via `corepack pnpm@9.15.0 …` (no global pnpm); migration needs root `.env` loaded
-(the `&` in DATABASE_URL breaks shell sourcing — export it quoted).
+**D17 scope expansion agreed in principle — build sequence A→B→C→D (see decisions.md D17),
+pending user sign-off on order.** A = rich route pages (price-by-date graph from calendar
+endpoint, needs per-day snapshot storage; finish mockup-v2 port; /blog with 3–5 articles).
+B = functional worldwide search (autocomplete, calendar picker, live results, flywheel
+tracking of searched routes). C = task 4 scoring (~2026-07-25, when ≥14d history). D =
+/go affiliate redirects when Travelpayouts approval lands; hotels phase 2 after.
+Local dev notes: pnpm via `corepack pnpm@9.15.0 …` (no global pnpm); web build needs
+DATABASE_URL exported (grep it from root `.env` — the `&` breaks shell sourcing, export
+quoted); worker via `python -m uv run …`.

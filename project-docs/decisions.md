@@ -1,5 +1,28 @@
 # Decisions — DealRadar (append-only)
 
+## 2026-07-11 — D17 (user directive; sequence needs sign-off): Scope expansion — worldwide + rich UX
+User directives (post-D16 review of the live site): (1) calendar date-picker on search
+dates; (2) replace monthly price boxes with a professional trend graph — current route
+pages "not rich"; (3) overall "$100K website" bar; (4+5) **worldwide search — do NOT limit
+to Singapore** ("too small"); (6) travel articles section; (7) destination autocomplete on
+"To"; (8) flights + hotel affiliate links.
+**What this supersedes:** the SG-only assumption (open item, now resolved: SG = curated
+seed + SEO base, search = worldwide). **What stays locked:** D1 affiliate link-out (no
+in-app booking — "book on site" = link-out); D4 flights-first (hotels stay phase 2, same
+Travelpayouts account, after flights earn); mockup v2 as design reference (most of the
+"$100K" richness is the un-ported parts of the signed-off design).
+**Honest constraints recorded:** all affiliate links blocked until Travelpayouts project
+approval (pending); verdicts/history trends need ≥14d data (task 4, ~2026-07-25); the graph
+we CAN ship now is cheapest-fare-per-departure-date (~23 real points/route from the
+calendar endpoint — needs per-day storage alongside monthly, small schema addition).
+Worldwide verdicts grow via the D4 flywheel: unknown searched routes get honest "tracking
+just started" + auto-added to daily polling (quota fine: API free, 10 req/s).
+**Proposed sequence (one session each):** A) rich route pages (price-by-date graph, finish
+mockup port, /blog with 3–5 articles) → B) functional worldwide search (autocomplete +
+calendar picker + live results + flywheel) → C) task 4 scoring/verdicts when history lands
+→ D) /go affiliate redirects the moment approval arrives; hotels after. Awaiting user
+sign-off on the sequence.
+
 ## 2026-07-11 — D16: Content build to harden Travelpayouts approval (task 5 slice)
 Travelpayouts' #1 rejection reason is thin content. Built out faresteal.com from a single
 landing page into a real multi-page content site, using LIVE data (not mockups):
