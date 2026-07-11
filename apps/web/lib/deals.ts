@@ -77,6 +77,23 @@ export async function getRouteStats(destCode: string): Promise<RouteStats> {
   return { months, cheapest, currency: months[0]?.currency ?? "SGD" };
 }
 
+export type FareDay = { departDate: string; price: number; currency: string };
+
+/** Latest cheapest fare per upcoming departure date for one route — feeds the graph (D17). */
+export async function getFareCalendar(destCode: string): Promise<FareDay[]> {
+  const rows = (await sql`
+    SELECT f.depart_date AS date, f.price::float8 AS price, f.currency
+    FROM fare_calendar f
+    JOIN routes r ON r.id = f.route_id
+    JOIN (SELECT route_id, depart_date, max(fetched_at) AS mx
+          FROM fare_calendar GROUP BY route_id, depart_date) l
+      ON l.route_id = f.route_id AND l.depart_date = f.depart_date AND l.mx = f.fetched_at
+    WHERE r.destination = ${destCode} AND f.depart_date >= to_char(now(), 'YYYY-MM-DD')
+    ORDER BY f.depart_date
+  `) as { date: string; price: number; currency: string }[];
+  return rows.map((r) => ({ departDate: r.date, price: r.price, currency: r.currency }));
+}
+
 /** "S$412" / "USD 412" */
 export function money(price: number, currency: string): string {
   const prefix = currency === "SGD" ? "S$" : `${currency} `;

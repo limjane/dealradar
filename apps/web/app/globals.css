@@ -489,7 +489,134 @@ nav.site a.pill {
   margin-top: 20px;
 }
 
+/* ---------- route page stats + chart (mockup section 3) ---------- */
+.statrow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 18px 0 4px;
+}
+.stat {
+  flex: 1 1 110px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 12px 14px;
+  box-shadow: var(--shadow-sm);
+}
+.stat .k {
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+.stat .v {
+  font-size: 19px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin-top: 2px;
+}
+.chart-wrap {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 20px;
+  margin: 14px 0;
+  box-shadow: var(--shadow-sm);
+}
+.chart-wrap h3 {
+  font-size: 15px;
+  font-weight: 800;
+  margin-bottom: 2px;
+}
+.chart-wrap .note {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--ink-soft);
+  margin-bottom: 12px;
+}
+
+/* ---------- blog ---------- */
+.post-card {
+  display: block;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 22px;
+  margin-top: 14px;
+  box-shadow: var(--shadow-sm);
+  text-decoration: none;
+  color: inherit;
+  transition: transform 0.12s, box-shadow 0.12s;
+}
+.post-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+.post-card h3 {
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+.post-card p {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink-soft);
+  margin-top: 6px;
+}
+.post-card .tag {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--lilac);
+  margin-bottom: 8px;
+}
+
 /* ---------- MOTION (CSS/SVG only, respects reduced-motion) ---------- */
+.drawline {
+  stroke-dasharray: 100;
+  stroke-dashoffset: 100;
+  animation: draw 2.2s ease-out forwards 0.3s;
+}
+@keyframes draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+.areafill {
+  opacity: 0;
+  animation: fadeup 1s ease-out forwards 1.8s;
+}
+@keyframes fadeup {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.ping {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: ping 1.8s cubic-bezier(0, 0, 0.2, 1) infinite 2.2s;
+  opacity: 0;
+}
+@keyframes ping {
+  0% {
+    transform: scale(0.4);
+    opacity: 0.8;
+  }
+  80%,
+  100% {
+    transform: scale(2.4);
+    opacity: 0;
+  }
+}
 .flame {
   display: inline-block;
   vertical-align: -2px;

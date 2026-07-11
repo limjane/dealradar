@@ -79,5 +79,15 @@ def test_missing_token_raises() -> None:
         TravelpayoutsPriceSource("")
 
 
+def test_day_prices_parses_and_sorts() -> None:
+    def handler(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(200, json=_CALENDAR)
+
+    days = _source(handler).day_prices("SIN", "BKK")
+    assert [d.depart_date for d in days] == sorted(d.depart_date for d in days)
+    assert len(days) == 5
+    assert days[0].currency == "SGD"
+
+
 def test_next_travel_months_wraps_year() -> None:
     assert next_travel_months(3, date(2026, 11, 10)) == ["2026-11", "2026-12", "2027-01"]

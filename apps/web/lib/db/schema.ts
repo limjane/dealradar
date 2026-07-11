@@ -66,6 +66,28 @@ export const priceSnapshots = pgTable(
   ],
 );
 
+// Append-only per-departure-date fares (D17): the calendar endpoint's cheapest fare per
+// travel date. Feeds the price-by-date graph; price_snapshots stays the monthly rollup.
+export const fareCalendar = pgTable(
+  "fare_calendar",
+  {
+    id: serial("id").primaryKey(),
+    routeId: integer("route_id")
+      .notNull()
+      .references(() => routes.id),
+    departDate: text("depart_date").notNull(), // YYYY-MM-DD
+    price: numeric("price", { precision: 10, scale: 2 }).notNull(),
+    currency: text("currency").notNull(),
+    source: text("source").notNull(),
+    fetchedAt: timestamp("fetched_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    index("fare_calendar_route_date_idx").on(t.routeId, t.departDate, t.fetchedAt),
+  ],
+);
+
 export const deals = pgTable(
   "deals",
   {

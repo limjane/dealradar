@@ -2,9 +2,10 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import { getRouteStats, money, type RouteStats } from "@/lib/deals";
+import { getFareCalendar, getRouteStats, money, type FareDay } from "@/lib/deals";
 import { destBySlug, formatMonth, ORIGIN, ROUTE_SLUGS } from "@/lib/routes-meta";
 
+import { FareChart } from "../../../components/fare-chart";
 import { SiteFooter } from "../../../components/site-footer";
 
 export const revalidate = 3600; // ISR — refresh hourly
@@ -27,25 +28,42 @@ export async function generateMetadata({
   };
 }
 
-const boxStyle: React.CSSProperties = {
-  flex: "1 1 120px",
-  background: "#f6f3fb",
-  border: "1px solid var(--line)",
-  borderRadius: 12,
-  padding: "12px 14px",
-};
+function median(xs: number[]): number {
+  const s = [...xs].sort((a, b) => a - b);
+  const mid = Math.floor(s.length / 2);
+  return s.length % 2 ? s[mid]! : (s[mid - 1]! + s[mid]!) / 2;
+}
 
 export default async function RoutePage({ params }: { params: Promise<{ route: string }> }) {
   const { route } = await params;
   const d = destBySlug(route);
   if (!d) notFound();
 
-  let stats: RouteStats = { months: [], cheapest: null, currency: "SGD" };
+  let days: FareDay[] = [];
+  let currency = "SGD";
   try {
-    stats = await getRouteStats(d.code);
+    days = await getFareCalendar(d.code);
+    if (days.length === 0) {
+      // calendar not populated yet — fall back to monthly snapshots for the headline
+      const stats = await getRouteStats(d.code);
+      currency = stats.currency;
+      days = stats.months.map((m) => ({
+        departDate: `${m.travelMonth}-15`,
+        price: m.price,
+        currency: m.currency,
+      }));
+    } else {
+      currency = days[0]!.currency;
+    }
   } catch {
-    // leave empty — render the evergreen content with a "gathering fares" note
+    days = [];
   }
+
+  const prices = days.map((x) => x.price);
+  const lo = prices.length ? Math.min(...prices) : null;
+  const hi = prices.length ? Math.max(...prices) : null;
+  const med = prices.length ? median(prices) : null;
+  const cheapestDay = lo !== null ? days[prices.indexOf(lo)]! : null;
 
   return (
     <>
@@ -61,11 +79,9 @@ export default async function RoutePage({ params }: { params: Promise<{ route: s
         <h1>
           {ORIGIN.city} → {d.city} {d.emoji}
         </h1>
-        <p className="updated">
-          Flight price tracker · {d.country} · updated daily
-        </p>
+        <p className="updated">Flight price tracker · {d.country} · updated daily</p>
 
-        {stats.cheapest && (
+        {cheapestDay && lo !== null && (
           <p
             style={{
               background: "linear-gradient(135deg,#d8fbe9,#eafff5)",
@@ -76,44 +92,48 @@ export default async function RoutePage({ params }: { params: Promise<{ route: s
               color: "var(--ink)",
             }}
           >
-            Cheapest we&apos;re tracking now:{" "}
-            <strong style={{ color: "var(--grab)" }}>
-              {money(stats.cheapest.price, stats.currency)}
-            </strong>{" "}
-            for travel in {formatMonth(stats.cheapest.travelMonth)}.
+            Cheapest date we&apos;re tracking:{" "}
+            <strong style={{ color: "var(--grab)" }}>{money(lo, currency)}</strong> departing{" "}
+            {formatMonth(cheapestDay.departDate.slice(0, 7))}.
           </p>
         )}
 
-        <p>{d.blurb}</p>
-
-        <h2>Cheapest fare by month</h2>
-        {stats.months.length === 0 ? (
-          <p>We&apos;re gathering fares for this route — check back shortly.</p>
-        ) : (
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 12, margin: "8px 0 4px" }}>
-            {stats.months.map((m) => (
-              <div key={m.travelMonth} style={boxStyle}>
-                <div
-                  style={{
-                    fontSize: 11,
-                    fontWeight: 800,
-                    letterSpacing: "0.06em",
-                    textTransform: "uppercase",
-                    color: "var(--ink-soft)",
-                  }}
-                >
-                  {formatMonth(m.travelMonth)}
-                </div>
-                <div style={{ fontSize: 20, fontWeight: 800, marginTop: 2 }}>
-                  {money(m.price, m.currency)}
-                </div>
-                <div style={{ fontSize: 11, fontWeight: 600, color: "var(--ink-soft)" }}>
-                  cheapest found
-                </div>
+        {lo !== null && hi !== null && med !== null && (
+          <div className="statrow">
+            <div className="stat">
+              <div className="k">Cheapest tracked</div>
+              <div className="v" style={{ color: "var(--grab)" }}>
+                {money(lo, currency)}
               </div>
-            ))}
+            </div>
+            <div className="stat">
+              <div className="k">Typical fare</div>
+              <div className="v">{money(med, currency)}</div>
+            </div>
+            <div className="stat">
+              <div className="k">Highest tracked</div>
+              <div className="v" style={{ color: "var(--high, #e11d48)" }}>
+                {money(hi, currency)}
+              </div>
+            </div>
+            <div className="stat">
+              <div className="k">Dates tracked</div>
+              <div className="v">{days.length}</div>
+            </div>
           </div>
         )}
+
+        {days.length >= 2 && (
+          <div className="chart-wrap">
+            <h3>Cheapest fare by departure date</h3>
+            <div className="note">
+              One-way fares our tracker has found for upcoming travel dates · updated daily
+            </div>
+            <FareChart days={days} currency={currency} />
+          </div>
+        )}
+
+        <p>{d.blurb}</p>
 
         <h2>
           When is it cheapest to fly {ORIGIN.city} → {d.city}?

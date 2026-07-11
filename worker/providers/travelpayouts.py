@@ -2,20 +2,19 @@
 
 Real behavior (verified 2026-07-10): the calendar endpoint IGNORES the depart_date month —
 it returns one cached set of cheapest-fare-per-departure-date spanning ~a year ahead,
-regardless of the month requested. So we make ONE call per route and bucket the returned
-dates by month ourselves, taking the cheapest fare in each month. That yields an accurate
-"cheapest to fly in month X" per travel month, and is cheaper (1 call/route, not 3).
+regardless of the month requested. So `day_prices()` makes ONE call per route and returns
+the raw per-date fares; callers bucket by month via `cheapest_by_month_from_days` (D15/D17).
 
 Data is aggregated/cached server-side (updates when users search the route), not a live
 per-query quote — accepted tradeoff for a price-history/deals engine (D10). One-way fares.
 """
 
-from collections import defaultdict
+from datetime import date
 from decimal import Decimal
 
 import httpx
 
-from providers.base import MonthPrice
+from providers.base import DayPrice, MonthPrice, cheapest_by_month_from_days
 
 DEFAULT_CURRENCY = "sgd"  # SG-outbound seed market; API defaults to USD if omitted
 _TIMEOUT = httpx.Timeout(15.0)
@@ -41,40 +40,40 @@ class TravelpayoutsPriceSource:
         self._currency = currency
         self._client = client or httpx.Client(timeout=_TIMEOUT)
 
+    def day_prices(self, origin: str, destination: str) -> list[DayPrice]:
+        """ONE API call: cheapest fare per departure date (sorted by date)."""
+        data = self._fetch(origin, destination)
+        out = [
+            DayPrice(
+                depart_date=date_str,
+                price=Decimal(str(entry["price"])),
+                currency=self._currency.upper(),
+            )
+            for date_str, entry in data.items()
+            if entry and entry.get("price") is not None
+        ]
+        out.sort(key=lambda d: d.depart_date)
+        return out
+
     def cheapest_by_month(
         self, origin: str, destination: str, months: list[str]
     ) -> list[MonthPrice]:
-        """One API call, then bucket the returned dates by month and keep the min per month.
-
-        Returns a MonthPrice only for the requested `months` that actually have fares.
-        """
-        data = self._fetch(origin, destination, months[0] if months else None)
-        cheapest: dict[str, Decimal] = defaultdict(lambda: Decimal("Infinity"))
-        for date_str, entry in data.items():
-            if not entry or entry.get("price") is None:
-                continue
-            month = date_str[:7]  # "YYYY-MM-DD" -> "YYYY-MM"
-            price = Decimal(str(entry["price"]))
-            if price < cheapest[month]:
-                cheapest[month] = price
-        return [
-            MonthPrice(travel_month=m, price=cheapest[m], currency=self._currency.upper())
-            for m in months
-            if m in cheapest
-        ]
+        """Convenience: day_prices grouped to the cheapest per requested month."""
+        return cheapest_by_month_from_days(self.day_prices(origin, destination), months)
 
     def close(self) -> None:
         self._client.close()
 
-    def _fetch(self, origin: str, destination: str, depart_hint: str | None) -> dict:
+    def _fetch(self, origin: str, destination: str) -> dict:
         resp = self._client.get(
             self.BASE_URL,
             params={
                 "origin": origin,
                 "destination": destination,
                 # depart_date is required by the API but its month is ignored (see module
-                # docstring) — we bucket the full response by month ourselves.
-                "depart_date": depart_hint or "",
+                # docstring) — pass the current month as a valid hint; callers bucket the
+                # full response by month themselves.
+                "depart_date": f"{date.today():%Y-%m}",
                 "calendar_type": "departure_date",
                 "one_way": "true",
                 "currency": self._currency,

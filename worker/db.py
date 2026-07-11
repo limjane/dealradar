@@ -4,7 +4,7 @@ from contextlib import contextmanager
 
 import psycopg
 
-from models import PriceSnapshot, Route
+from models import FareDay, PriceSnapshot, Route
 from settings import settings
 
 
@@ -51,3 +51,16 @@ def insert_snapshots(snaps: list[PriceSnapshot]) -> int:
             [(s.route_id, s.travel_month, s.cabin, s.price, s.currency, s.source) for s in snaps],
         )
     return len(snaps)
+
+
+def insert_fare_days(days: list[FareDay]) -> int:
+    """Append fare_calendar rows (per-departure-date fares, D17). Returns count written."""
+    if not days:
+        return 0
+    with get_conn() as conn, conn.cursor() as cur:
+        cur.executemany(
+            "INSERT INTO fare_calendar (route_id, depart_date, price, currency, source) "
+            "VALUES (%s, %s, %s, %s, %s)",
+            [(d.route_id, d.depart_date, d.price, d.currency, d.source) for d in days],
+        )
+    return len(days)

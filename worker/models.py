@@ -24,6 +24,17 @@ class Route(BaseModel):
     seed_priority: int
 
 
+class FareDay(BaseModel):
+    """One fare_calendar row: cheapest fare for a specific departure date (D17)."""
+
+    route_id: int
+    depart_date: str  # YYYY-MM-DD
+    price: Decimal
+    currency: str
+    source: str
+    fetched_at: datetime | None = None  # DB default
+
+
 class PriceSnapshot(BaseModel):
     route_id: int
     travel_month: str  # YYYY-MM
