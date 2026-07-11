@@ -19,11 +19,15 @@ affiliate network — one token for both. Env changed: `AMADEUS_*` → `TRAVELPA
 Data is aggregated/cached, not live — fine for a deals/price-history engine. Full
 rationale + endpoint fit in decisions.md D10.
 
-## Travelpayouts review (D12)
-Rejected while site was the placeholder ("under construction"). Real landing page now live
-→ **resubmit the project for review** once Vercel finishes redeploying. NOTE: the **Data API
-token** (for polling) is issued from Developers/API and is NOT gated on this review — grab it
-independently. The affiliate/marker (25 programs incl. Trip.com) is what needs the approval.
+## Travelpayouts review (D12/D13/D14) — READY TO RESUBMIT
+Landing page is **LIVE on https://faresteal.com** (custom domain, D13) — verified: real
+content (26.5 KB), SSL, apex→www redirect, no bot-challenge. Repo made public to unblock
+Vercel Hobby deploys (D14). **→ Resubmit the project to Travelpayouts using faresteal.com**
+(was rejected on the vercel.app placeholder). Content is still fairly thin — if a brand
+declines for "not enough content," the SEO route pages (task 5) are the fix.
+NOTE: the **Data API token** (for polling) is from Developers/API and is NOT gated on this
+review — grab it independently to keep the build moving.
+Also: confirm Vercel → Firewall → Attack Challenge Mode is OFF so crawlers aren't challenged.
 
 ## Blocking — user actions
 1. **Travelpayouts account (DealRadar's OWN — separate from TravelHub)**: sign up at
