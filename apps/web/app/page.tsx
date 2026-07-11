@@ -208,7 +208,11 @@ export default function Home() {
             </h2>
             <p className="sub">Fresh fares, checked against 60 days of history.</p>
 
-            <div className="deal-card">
+            <Link
+              href="/flights/sin-dps"
+              className="deal-card"
+              style={{ textDecoration: "none", color: "inherit" }}
+            >
               <div className="dest" style={{ background: "linear-gradient(135deg,#34d399,#0ea5e9)" }}>
                 🏝️
               </div>
@@ -222,9 +226,13 @@ export default function Home() {
               <div className="p">
                 S$168<small>S$285</small>
               </div>
-            </div>
+            </Link>
 
-            <div className="deal-card">
+            <Link
+              href="/flights/sin-nrt"
+              className="deal-card"
+              style={{ textDecoration: "none", color: "inherit" }}
+            >
               <div className="dest" style={{ background: "linear-gradient(135deg,#f472b6,#8b5cf6)" }}>
                 🗼
               </div>
@@ -232,15 +240,19 @@ export default function Home() {
                 <span className="badge grab">
                   <Flame /> 38% below normal
                 </span>
-                <div className="route">SIN → Tokyo (HND)</div>
+                <div className="route">SIN → Tokyo (NRT)</div>
                 <div className="when">Sep travel · direct</div>
               </div>
               <div className="p">
                 S$312<small>S$505</small>
               </div>
-            </div>
+            </Link>
 
-            <div className="deal-card">
+            <Link
+              href="/flights/sin-icn"
+              className="deal-card"
+              style={{ textDecoration: "none", color: "inherit" }}
+            >
               <div className="dest" style={{ background: "linear-gradient(135deg,#fb923c,#f43f5e)" }}>
                 🌸
               </div>
@@ -254,7 +266,7 @@ export default function Home() {
               <div className="p">
                 S$385<small>S$540</small>
               </div>
-            </div>
+            </Link>
 
             <div style={{ textAlign: "center", marginTop: 28 }}>
               <Link

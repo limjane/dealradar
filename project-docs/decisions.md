@@ -1,5 +1,34 @@
 # Decisions — DealRadar (append-only)
 
+## 2026-07-11 — D19 (user directives, batch 2): global default-origin, bug fix, ways of working, backlog
+1. **Global from day one (amends D17 Group B):** launch is NOT SG-only. Deals/search default
+   the "From" to the **visitor's country (geo-IP)** with a manual country/origin switcher.
+   Implementation note: Vercel provides `x-vercel-ip-country` header free — map country →
+   primary hub airports; SG routes remain the seeded base, flywheel adds the rest.
+2. **Bug fixed:** home showcase deal-cards were static divs — now link to their route pages
+   (Tokyo card corrected HND→NRT to match the tracked route). NOTE: "click through to GRAB
+   the deal" (affiliate link-out to book) is Group D — blocked on Travelpayouts approval.
+3. **Model segregation (cost optimisation, applies to all sessions):** user asked to route
+   work to the cheapest capable model. Mapping: **Fable/Opus** = architecture, design
+   direction (v3 mockup), tricky debugging, security review sign-off. **Sonnet** = ordinary
+   feature builds from an agreed plan (Group B port, blog articles, page work). **Haiku** =
+   mechanical edits/copy tweaks/single-file fixes. Plans get written in these docs by the
+   big model; cheaper sessions execute them.
+4. **Modularity requirement:** keep strict module boundaries so parallel contributors don't
+   collide and fixes stay contained — already the architecture (monorepo apps/web + worker;
+   provider adapter layer; lib/* single-purpose modules; append-only tables; CI + tests as
+   the regression guard). New features must land as new modules/routes, not edits across
+   unrelated files.
+5. **Backlog (future phase, recorded not scheduled):** user accounts + points system;
+   "Steal the deal for a partner / surprise gift" — user sets a gift budget, FareSteal
+   suggests 3–5 deals to gift a friend/colleague/family member. Sequence AFTER monetization
+   works (post Group D) — accounts add PII/PDPA burden (subscribers table stays the only
+   PII until then).
+6. **Security cadence:** run `/security-review` at each milestone (next: before Group B
+   ships) + full pre-launch security pass (task 9: nonce CSP, rate limiting on /go +
+   subscribe, dependency audit, secret rotation — Neon password + TP token are in chat
+   history and must rotate pre-launch).
+
 ## 2026-07-11 — D18 (user directive): Design elevation pass — premium/cinematic, mockup-first
 After seeing Group A live, user verdict: graph + overall look "not classy and premium…
 looks cheap… very normal"; wants **bold, futuristic, cinematic, travel-feel, lively**

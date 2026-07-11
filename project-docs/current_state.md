@@ -98,12 +98,16 @@ rebuilt with stat row + SVG price-by-date chart (mockup style, real data), /blog
 articles, footer/sitemap wired. Local gates green (lint/types/build, 9 worker tests).
 **Live verification pending** — my curl polling re-tripped Vercel's bot challenge (2nd
 time; see memory note — verify with ONE delayed request only, or user eyeballs it).
-**Next session (ONE task): D18 design elevation — `mockups/v3-cinematic.html`.** User wants
-premium/cinematic/bold ("$100K feel"); current look rejected as "cheap/normal". Mockup-first
-(iterate in live preview, batched feedback, port once after sign-off). Present CSS/SVG-only
-vs optimized-photography option. THEN Group B = worldwide search (autocomplete, date-picker,
-live results, flywheel). C = task 4 scoring (~2026-07-25). D = /go redirects on approval.
-**User is credit-conscious: keep sessions single-task and short, batch design feedback.**
+**Next session (ONE task, use Fable/Opus): D18 design elevation — `mockups/v3-cinematic.html`.**
+User wants premium/cinematic/bold ("$100K feel"); current look rejected as "cheap/normal".
+Mockup-first (iterate in live preview, batched feedback, port once after sign-off — port can
+be a Sonnet session). Present CSS/SVG-only vs optimized-photography option in the mockup.
+THEN Group B (Sonnet, plan in D17/D19) = worldwide search: autocomplete, date-picker, live
+results, flywheel, **geo-IP default origin with manual switcher (D19.1 — global launch)**.
+C = task 4 scoring (~2026-07-25). D = /go redirects the moment Travelpayouts approval lands.
+**Ways of working now standing (D19): model segregation by task, strict module boundaries,
+/security-review each milestone, secrets rotate pre-launch. User is credit-conscious —
+single-task sessions, batch feedback.** Backlog recorded in D19.5 (points, gift deals).
 Local dev notes: pnpm via `corepack pnpm@9.15.0 …` (no global pnpm); web build needs
 DATABASE_URL exported (grep it from root `.env` — the `&` breaks shell sourcing, export
 quoted); worker via `python -m uv run …`.
