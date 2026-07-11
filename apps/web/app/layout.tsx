@@ -12,9 +12,23 @@ const jakarta = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://www.faresteal.com"),
   title: "FareSteal — flight deals, verified",
   description:
-    "Flight search with price-intelligence verdicts: know instantly if a fare is actually a deal. We track fares daily so you know a good price when you see one.",
+    "Flight price intelligence for Singapore travellers. We track fares daily and tell you whether today's price is actually a deal.",
+  openGraph: {
+    title: "FareSteal — flight deals, verified",
+    description:
+      "We track fares daily so you know a good price when you see one. Flights from Singapore, verified against real price history.",
+    url: "https://www.faresteal.com",
+    siteName: "FareSteal",
+    type: "website",
+  },
+  twitter: {
+    card: "summary",
+    title: "FareSteal — flight deals, verified",
+    description: "Flight price intelligence for Singapore travellers.",
+  },
 };
 
 export default function RootLayout({

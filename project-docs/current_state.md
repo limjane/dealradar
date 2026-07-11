@@ -19,6 +19,13 @@ affiliate network — one token for both. Env changed: `AMADEUS_*` → `TRAVELPA
 Data is aggregated/cached, not live — fine for a deals/price-history engine. Full
 rationale + endpoint fit in decisions.md D10.
 
+## Site is now a real multi-page content site (D16) — approval-hardened
+Live on faresteal.com: home, **/deals** (live prices), **10 /flights/[route]** pages (real
+per-month prices + editorial), /about /privacy /terms /disclosure, favicon, robots.txt,
+sitemap.xml, OG tags. Addresses Travelpayouts' "thin content" rejection reason. Remaining
+polish (optional): functional search inputs (CTA already links to /deals), a real OG image,
+buy/wait verdicts (task 4, needs ~14d history).
+
 ## Travelpayouts review (D12/D13/D14) — READY TO RESUBMIT
 Landing page is **LIVE on https://faresteal.com** (custom domain, D13) — verified: real
 content (26.5 KB), SSL, apex→www redirect, no bot-challenge. Repo made public to unblock
