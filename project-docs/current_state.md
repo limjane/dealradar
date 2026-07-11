@@ -38,7 +38,16 @@ Also: confirm Vercel → Firewall → Attack Challenge Mode is OFF so crawlers a
    future syncs.) Push the updated render.yaml too so the blueprint matches.
 3. Push the doc/env/yaml changes from this session to GitHub (not yet committed).
 
-## Task 3 — worker polling — CODE-COMPLETE, live run pending token
+## Task 3 — worker polling — ✅ DONE + VERIFIED LIVE (2026-07-11)
+First real poll ran: real Travelpayouts token + Neon → **10/10 routes, 23 snapshots, 0
+errors** (months 07/08/09, sane prices). Adapter corrected for the month-ignoring endpoint
+(D15). **≥14-day verdict clock started 2026-07-11 → usable ~2026-07-25.**
+**⚠ For daily accrual, update Render env:** the two cron services still have the old fake
+`AMADEUS_*` vars — replace with `TRAVELPAYOUTS_TOKEN` (real value in local `.env`) + keep
+`DATABASE_URL`. Until then, only today's manual run is recorded; tomorrow's won't fire.
+Next build task = **task 4 (deal scoring)** once ~14 days of history exist.
+
+## (history) Task 3 — worker polling — CODE-COMPLETE, live run pending token
 Built (committed): `worker/providers/` (`PriceSource` protocol + `TravelpayoutsPriceSource`
 wrapping `GET /v1/prices/calendar`), `dates.next_travel_months`, `db.active_routes` +
 `db.insert_snapshots`, `seed_routes.py`, real `poll.py`. Choices in D11 (one row per

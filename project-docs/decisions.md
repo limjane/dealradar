@@ -1,5 +1,19 @@
 # Decisions — DealRadar (append-only)
 
+## 2026-07-11 — D15: Calendar endpoint ignores month → group client-side (task 3 verified live)
+**Found on first real call:** `/v1/prices/calendar` **ignores the `depart_date` month** —
+requesting Aug/Sep/Nov all returned the identical cached dataset (dates spanning ~a year,
+same cheapest). The original adapter's "one call per month, label by requested month" (D11)
+would have written identical prices under different month labels — garbage.
+**Fix:** ONE call per route, then bucket the returned per-date fares by `YYYY-MM` and keep
+the min per month. Accurate "cheapest to fly in month X" AND cheaper (1 call/route, not 3).
+Tests updated to mirror real shape (single multi-month dataset → grouped).
+**Verified end-to-end (2026-07-11):** real token + Neon → 10/10 routes, **23 snapshots**,
+0 errors, months 07/08/09; prices sane and genuinely differ per month. First real history
+row — the ≥14-day verdict clock starts today (2026-07-11); usable ~2026-07-25.
+**Caveat (D10 reminder):** data is Travelpayouts' cache — updates when users search the
+route, so daily snapshots for quiet routes may be flat until someone searches them.
+
 ## 2026-07-10 — D14: Repo made PUBLIC to unblock Vercel Hobby deploys
 **Problem:** After the task-2 import build, every git-pushed commit deployed as **"Blocked"**
 on Vercel — "commit author did not have contributing access… Hobby Plan does not support
