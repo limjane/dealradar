@@ -58,7 +58,10 @@ shape). Adapter codes to the documented contract — confirm on first real run.
 - Blueprint: `foundation.md` · Mockup: `mockups/v2-fun-travel.html`
 
 ## Still open (non-blocking)
-- Seed market confirmation (assumed SG/SEA outbound), product name + domain
+- Seed market confirmation (assumed SG/SEA outbound)
+- ~~product name + domain~~ → **RESOLVED: FareSteal / faresteal.com** (D13; registering at
+  Porkbun). Pending: purchase → connect to Vercel → DNS → disable bot-challenge → resubmit
+  Travelpayouts. Code/UI still says "DealRadar" (cosmetic rename later).
 - Neon password is in this session's chat history — rotate before real launch (non-urgent).
 
 ## Open bug — mockup (assigned to a fresh Sonnet session)

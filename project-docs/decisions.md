@@ -1,5 +1,36 @@
 # Decisions — DealRadar (append-only)
 
+## 2026-07-10 — D14: Repo made PUBLIC to unblock Vercel Hobby deploys
+**Problem:** After the task-2 import build, every git-pushed commit deployed as **"Blocked"**
+on Vercel — "commit author did not have contributing access… Hobby Plan does not support
+collaboration for private repositories." Commit author is `tofutrade1@gmail.com`; the repo
+is GitHub `limjane` connected to Vercel — Vercel treated the author as an outside
+collaborator on a *private* repo and refused to build (so production stayed pinned to the
+old placeholder commit `523ed9f`).
+**Fix:** Made `limjane/dealradar` **public**. Vercel Hobby's collaborator restriction only
+applies to private repos; public repos build any commit — free, no Pro upgrade. Verified no
+secrets in tracked files first (`.env` gitignored; only a fake `ci:ci@localhost` CI cred).
+**Tradeoff:** source is now publicly visible (acceptable — MVP moat is data/execution, no
+secrets). Can revert to private later if we ever move to Vercel Pro.
+**Domain:** faresteal.com (D13) now registered at Porkbun + wired to Vercel — apex A
+216.198.79.1, `www` CNAME cname.vercel-dns.com, SSL issued, apex→www 307. DNS verified live.
+
+## 2026-07-10 — D13: Product name + domain = FareSteal / faresteal.com
+**Decision:** Product name is **FareSteal**, domain **faresteal.com** (verified available;
+being registered at **Porkbun**, ~US$11/yr, domain only — no web/email hosting add-ons).
+Resolves the long-open "product name + domain" item. Forced now because Travelpayouts
+review requires a custom domain, not the `*.vercel.app` subdomain (see
+[[dealradar-travelpayouts-approval]] / D12).
+**Why this name:** ties to the hero line "actually a steal?"; clean `.com`; descriptive of
+the deal wedge; spellable (unlike fairtail/farebird homophones we rejected). "DealRadar"
+was taken on `.com` and stays only as the internal repo/placeholder name for now.
+**Mascot:** "Radar" the swift can keep its name (it's a character name, independent of the
+brand) — revisit if we want it to echo "FareSteal".
+**Email:** deferred — will use free forwarding or Zoho free tier when a branded address is
+wanted; not needed for launch or review.
+**Next:** register → add domain in Vercel → set Porkbun DNS → turn off Vercel bot-challenge
+→ resubmit Travelpayouts. Rename in code/UI (DealRadar→FareSteal) is a later cosmetic pass.
+
 ## 2026-07-10 — D12: Landing page brought live early (task 5 slice) to unblock affiliate review
 **Trigger:** Travelpayouts rejected the project — 25 programs incl. Trip.com locked because
 the live site was the "scaffold v0 — Launching soon" placeholder (read as "under
