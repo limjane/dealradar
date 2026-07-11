@@ -12,7 +12,7 @@ const jakarta = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "DealRadar — flight deals, verified",
+  title: "FareSteal — flight deals, verified",
   description:
     "Flight search with price-intelligence verdicts: know instantly if a fare is actually a deal. We track fares daily so you know a good price when you see one.",
 };

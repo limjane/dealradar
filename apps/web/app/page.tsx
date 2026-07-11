@@ -42,7 +42,7 @@ const SYMBOLS = `
 
 // Perched "scout" pose (blinks) — the clean, non-buggy pose (avoids the flying-pose eye bug).
 const MASCOT = `
-<svg class="mascot floaty" viewBox="0 0 120 120" width="96" height="96" role="img" aria-label="Radar, the DealRadar price-scout mascot">
+<svg class="mascot floaty" viewBox="0 0 120 120" width="96" height="96" role="img" aria-label="Radar, the FareSteal price-scout mascot">
   <use href="#bird-base"/>
   <circle cx="84" cy="48" r="6" fill="#231a4f"/>
   <circle cx="82" cy="46" r="2" fill="#fff"/>
@@ -92,7 +92,7 @@ export default function Home() {
           <div dangerouslySetInnerHTML={{ __html: SKY }} />
           <header className="site on-dark" style={{ position: "relative" }}>
             <div className="logo">
-              <span className="mark">✈</span>Deal<span style={{ fontWeight: 400 }}>Radar</span>
+              <span className="mark">✈</span>Fare<span style={{ fontWeight: 400 }}>Steal</span>
             </div>
             <nav className="site">
               <a href="#how">How it works</a>
@@ -164,7 +164,7 @@ export default function Home() {
 
         {/* ---------- HOW IT WORKS ---------- */}
         <section className="section" id="how">
-          <h2>How DealRadar works</h2>
+          <h2>How FareSteal works</h2>
           <p className="sub">Three steps between you and a fare you can trust.</p>
           <div className="steps">
             <div className="step">
@@ -257,14 +257,14 @@ export default function Home() {
           <div className="inner">
             <div className="row1">
               <div className="logo">
-                <span className="mark">✈</span>Deal<span style={{ fontWeight: 400 }}>Radar</span>
+                <span className="mark">✈</span>Fare<span style={{ fontWeight: 400 }}>Steal</span>
               </div>
               <div style={{ fontSize: 13, fontWeight: 600 }}>
-                © 2026 DealRadar · Flight price intelligence for Singapore travellers
+                © 2026 FareSteal · Flight price intelligence for Singapore travellers
               </div>
             </div>
             <p className="disc">
-              DealRadar compares fares and shows price history. Bookings happen on the airline or
+              FareSteal compares fares and shows price history. Bookings happen on the airline or
               travel provider&apos;s own website — we may earn a commission from partners, which
               never changes the price you pay. Fares shown are illustrative; always confirm the
               final total on the provider&apos;s site.
