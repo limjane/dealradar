@@ -92,12 +92,15 @@ shape). Adapter codes to the documented contract — confirm on first real run.
 fine). See prior notes — fix eye only.
 
 ## Next session
-**D17 scope expansion agreed in principle — build sequence A→B→C→D (see decisions.md D17),
-pending user sign-off on order.** A = rich route pages (price-by-date graph from calendar
-endpoint, needs per-day snapshot storage; finish mockup-v2 port; /blog with 3–5 articles).
-B = functional worldwide search (autocomplete, calendar picker, live results, flywheel
-tracking of searched routes). C = task 4 scoring (~2026-07-25, when ≥14d history). D =
-/go affiliate redirects when Travelpayouts approval lands; hotels phase 2 after.
+**D17 sequence signed off ("go A") — Group A BUILT + pushed 2026-07-11:** `fare_calendar`
+table (migrated), worker writes per-date fares (160 rows live, 1 call/route), route pages
+rebuilt with stat row + SVG price-by-date chart (mockup style, real data), /blog with 4
+articles, footer/sitemap wired. Local gates green (lint/types/build, 9 worker tests).
+**Live verification pending** — my curl polling re-tripped Vercel's bot challenge (2nd
+time; see memory note — verify with ONE delayed request only, or user eyeballs it).
+**Next: Group B** = functional worldwide search (autocomplete via Travelpayouts places API,
+calendar date-picker, live results, flywheel: searched routes auto-added to `routes`).
+Then C = task 4 scoring (~2026-07-25). D = /go affiliate redirects when approval lands.
 Local dev notes: pnpm via `corepack pnpm@9.15.0 …` (no global pnpm); web build needs
 DATABASE_URL exported (grep it from root `.env` — the `&` breaks shell sourcing, export
 quoted); worker via `python -m uv run …`.
