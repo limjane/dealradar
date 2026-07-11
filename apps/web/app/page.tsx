@@ -8,6 +8,10 @@
  * everything else is plain JSX. Static render → ISR/SEO-friendly.
  */
 
+import Link from "next/link";
+
+import { SiteFooter } from "../components/site-footer";
+
 // Reusable animated symbols: "fire" flame + "Radar" mascot base rig (wing/tail flap SMIL).
 const SYMBOLS = `
 <symbol id="fire" viewBox="0 0 24 24">
@@ -96,9 +100,9 @@ export default function Home() {
             </div>
             <nav className="site">
               <a href="#how">How it works</a>
-              <a href="#deals" className="pill">
+              <Link href="/deals" className="pill">
                 Today&apos;s deals
-              </a>
+              </Link>
             </nav>
           </header>
 
@@ -144,7 +148,9 @@ export default function Home() {
                   <input type="text" placeholder="+ Add" aria-label="Return" />
                 </div>
               </div>
-              <button type="button">Check the price →</button>
+              <Link href="/deals" className="cta">
+                Check the price →
+              </Link>
             </div>
 
             <div className="hot-chips">
@@ -249,28 +255,29 @@ export default function Home() {
                 S$385<small>S$540</small>
               </div>
             </div>
+
+            <div style={{ textAlign: "center", marginTop: 28 }}>
+              <Link
+                href="/deals"
+                style={{
+                  display: "inline-block",
+                  background: "linear-gradient(135deg, var(--coral), #ff7a3d)",
+                  color: "#fff",
+                  textDecoration: "none",
+                  fontWeight: 800,
+                  padding: "13px 26px",
+                  borderRadius: 14,
+                  boxShadow: "0 8px 22px rgba(240,62,49,.35)",
+                }}
+              >
+                See all live deals from Singapore →
+              </Link>
+            </div>
           </div>
         </section>
 
         {/* ---------- FOOTER ---------- */}
-        <footer className="site-footer">
-          <div className="inner">
-            <div className="row1">
-              <div className="logo">
-                <span className="mark">✈</span>Fare<span style={{ fontWeight: 400 }}>Steal</span>
-              </div>
-              <div style={{ fontSize: 13, fontWeight: 600 }}>
-                © 2026 FareSteal · Flight price intelligence for Singapore travellers
-              </div>
-            </div>
-            <p className="disc">
-              FareSteal compares fares and shows price history. Bookings happen on the airline or
-              travel provider&apos;s own website — we may earn a commission from partners, which
-              never changes the price you pay. Fares shown are illustrative; always confirm the
-              final total on the provider&apos;s site.
-            </p>
-          </div>
-        </footer>
+        <SiteFooter />
       </main>
     </>
   );

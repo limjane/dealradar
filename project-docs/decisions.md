@@ -1,5 +1,22 @@
 # Decisions — DealRadar (append-only)
 
+## 2026-07-11 — D16: Content build to harden Travelpayouts approval (task 5 slice)
+Travelpayouts' #1 rejection reason is thin content. Built out faresteal.com from a single
+landing page into a real multi-page content site, using LIVE data (not mockups):
+- **/deals** — cheapest current fare per route, queried from `price_snapshots` (ISR hourly).
+- **/flights/[route]** — 10 SSG route pages (SIN→BKK…LHR) with real cheapest-per-month
+  prices + evergreen "when to book" editorial. generateStaticParams + ISR.
+- **Legal/trust:** /about (+contact hello@faresteal.com), /privacy (PDPA-aware),
+  /terms, /disclosure (affiliate). Shared `SiteFooter` (legal nav) + `DocShell`.
+- Home CTA + "Today's deals" now link to /deals; showcase has a "see all deals" button.
+Web read layer: `lib/deals.ts` (neon direct, latest snapshot per route+month, try/catch so
+a DB hiccup can't fail the build) + `lib/routes-meta.ts` (destinations, slugs, editorial).
+**Verified:** typecheck+lint clean; `next build` green — DB pages prerendered from real Neon
+data (needs DATABASE_URL at build; Vercel has it, pass it locally).
+**Honest limits:** no buy/wait verdicts or history charts yet (need ~14 days → task 4);
+home showcase cards still use illustrative %-off badges (signed-off marketing). Email is a
+mailto to hello@faresteal.com — set up free forwarding/Zoho when convenient.
+
 ## 2026-07-11 — D15: Calendar endpoint ignores month → group client-side (task 3 verified live)
 **Found on first real call:** `/v1/prices/calendar` **ignores the `depart_date` month** —
 requesting Aug/Sep/Nov all returned the identical cached dataset (dates spanning ~a year,
