@@ -8,7 +8,7 @@ _Read this first each session; update it last. The blueprint lives in `foundatio
 **BUILD.** Task 2 (scaffold + deploy) all but done. Live services:
 - ✅ **GitHub**: `git@github.com:limjane/dealradar` (SSH; HTTPS PAT lacked `workflow` scope). `main` pushed.
 - ✅ **Neon**: project `dealradar` in ap-southeast-1; migration applied; all 6 tables verified. Pooled `DATABASE_URL` in `.env` (gitignored).
-- ✅ **Vercel**: https://dealradar-web-chi.vercel.app — placeholder page live, all 6 security headers verified (CSP/HSTS/nosniff/frame-deny). Root Dir `apps/web`, `DATABASE_URL` set.
+- ✅ **Vercel**: https://dealradar-web-chi.vercel.app — **real landing page live** (D12; replaced placeholder to unblock Travelpayouts review). Security headers verified earlier. Root Dir `apps/web`, `DATABASE_URL` set.
 - 🟡 **Render**: blueprint deployed from `render.yaml`, builds green. BUT env still has **fake Amadeus vars** — must be swapped (see below). Crons only fire 21:00 UTC daily, so nothing has run yet.
 
 ## ⚠ Provider pivot — D10 (price source: Amadeus → Travelpayouts Data API)
@@ -19,9 +19,16 @@ affiliate network — one token for both. Env changed: `AMADEUS_*` → `TRAVELPA
 Data is aggregated/cached, not live — fine for a deals/price-history engine. Full
 rationale + endpoint fit in decisions.md D10.
 
+## Travelpayouts review (D12)
+Rejected while site was the placeholder ("under construction"). Real landing page now live
+→ **resubmit the project for review** once Vercel finishes redeploying. NOTE: the **Data API
+token** (for polling) is issued from Developers/API and is NOT gated on this review — grab it
+independently. The affiliate/marker (25 programs incl. Trip.com) is what needs the approval.
+
 ## Blocking — user actions
 1. **Travelpayouts account (DealRadar's OWN — separate from TravelHub)**: sign up at
    travelpayouts.com → Developers → copy API token → put in `.env` as `TRAVELPAYOUTS_TOKEN`.
+   Resubmit project for review now that the landing page is real (D12).
 2. **Render env fix**: in Render dashboard, delete the 3 fake `AMADEUS_*` vars on both
    cron services, add `TRAVELPAYOUTS_TOKEN` (real). (render.yaml already reflects this for
    future syncs.) Push the updated render.yaml too so the blueprint matches.

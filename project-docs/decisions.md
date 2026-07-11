@@ -1,5 +1,22 @@
 # Decisions — DealRadar (append-only)
 
+## 2026-07-10 — D12: Landing page brought live early (task 5 slice) to unblock affiliate review
+**Trigger:** Travelpayouts rejected the project — 25 programs incl. Trip.com locked because
+the live site was the "scaffold v0 — Launching soon" placeholder (read as "under
+construction"). The API token side is NOT gated on this; the affiliate/marker side is.
+**What:** Ported section 1 of the signed-off v2 design (hero + search card + destination
+chips + trust bar) as the real Next.js homepage, plus a how-it-works section, a deals
+showcase (reusing the signed-off deal-card design), and a footer with an affiliate-commission
+disclosure. Replaces the placeholder `page.tsx`.
+**Choices:** (a) `next/font` self-hosts Plus Jakarta Sans → meets the Lighthouse≥95 perf
+gate (D7) AND stays within the 'self'-only CSP (no Google CDN). (b) Mascot uses the clean
+"scout" pose (blinks), deliberately NOT the flying pose (open eye bug) — sidesteps it.
+(c) Search is **presentational** — wiring live search is still task 5. (d) Showcase fares
+are illustrative; footer says so (honesty + FTC-style disclosure).
+**Verified:** web typecheck + lint clean; `next build` green with `/` prerendered static
+(102 kB First Load JS). Live-URL check pending Vercel redeploy.
+**Not done:** functional search, live deals, `/go` affiliate redirect — remain task 4/5.
+
 ## 2026-07-10 — D11: Task 3 build choices (poll granularity + HTTP client)
 Small choices made building the poller (under D10's frame):
 - **Snapshot granularity = one row per route×travel-month** (the cheapest fare found in

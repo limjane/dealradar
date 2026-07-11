@@ -1,1 +1,476 @@
 @import "tailwindcss";
+
+/* ============================================================
+   DealRadar landing page — ported from the signed-off design
+   (project-docs/mockups/v2-fun-travel.html, D7/D8). Light theme,
+   coral/sun/lilac palette. All motion is CSS/SVG only (perf gate).
+   ============================================================ */
+
+:root {
+  --ink: #231a4f;
+  --ink-soft: #6f6795;
+  --line: #ece5f2;
+  --bg: #faf7ff;
+  --card: #ffffff;
+  --coral: #ff5a4e;
+  --sun: #ffb648;
+  --teal: #0fb5a6;
+  --lilac: #8b5cf6;
+  --grab: #059669;
+  --shadow-sm: 0 1px 2px rgba(35, 26, 79, 0.06), 0 4px 14px rgba(35, 26, 79, 0.06);
+  --shadow-md: 0 2px 4px rgba(35, 26, 79, 0.06), 0 12px 32px rgba(35, 26, 79, 0.1);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-jakarta), system-ui, -apple-system, "Segoe UI", sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  line-height: 1.5;
+}
+
+/* ---------- header ---------- */
+header.site {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 24px;
+  max-width: 1080px;
+  margin: 0 auto;
+}
+header.site.on-dark {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+}
+.logo {
+  font-weight: 800;
+  font-size: 20px;
+  letter-spacing: -0.02em;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.logo .mark {
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  background: linear-gradient(135deg, var(--coral), var(--sun));
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 15px;
+  box-shadow: 0 3px 8px rgba(240, 62, 49, 0.35);
+}
+nav.site a {
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.85);
+  text-decoration: none;
+  margin-left: 20px;
+}
+nav.site a.pill {
+  background: rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  padding: 7px 14px;
+  border-radius: 999px;
+  color: #fff;
+}
+
+/* ---------- verdict badge (deals showcase) ---------- */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 13px;
+  font-weight: 800;
+  padding: 6px 14px;
+  border-radius: 999px;
+}
+.badge.grab {
+  background: linear-gradient(135deg, #d8fbe9, #baf3d9);
+  color: var(--grab);
+  box-shadow: 0 2px 8px rgba(5, 150, 105, 0.18);
+}
+
+/* ---------- HERO ---------- */
+.hero {
+  position: relative;
+  padding: 0 0 96px;
+  background: linear-gradient(165deg, #241a5e 0%, #4b2585 34%, #b23a79 66%, #ff8e53 100%);
+  overflow: hidden;
+}
+.hero .sky {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+.hero-inner {
+  position: relative;
+  padding: 30px 24px 0;
+  text-align: center;
+  max-width: 760px;
+  margin: 0 auto;
+}
+.mascot {
+  display: block;
+  margin: 0 auto 6px;
+  filter: drop-shadow(0 8px 18px rgba(20, 10, 60, 0.35));
+}
+.hero h1 {
+  font-size: clamp(30px, 5vw, 44px);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: #fff;
+  line-height: 1.12;
+  margin-bottom: 12px;
+}
+.hero h1 .zing {
+  position: relative;
+  white-space: nowrap;
+  background: linear-gradient(90deg, var(--sun), #ff7a59);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.hero h1 .zing svg {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -10px;
+  width: 100%;
+  height: 10px;
+}
+.hero .lead {
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 16.5px;
+  font-weight: 600;
+  margin-bottom: 30px;
+}
+.searchcard {
+  max-width: 660px;
+  margin: 0 auto;
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(8px);
+  border-radius: 20px;
+  padding: 12px;
+  box-shadow: 0 20px 50px rgba(20, 10, 60, 0.35);
+  text-align: left;
+}
+.fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+@media (min-width: 620px) {
+  .fields {
+    grid-template-columns: 1.2fr 1.2fr 1fr 1fr;
+  }
+}
+.field {
+  background: #f6f3fb;
+  border: 1.5px solid transparent;
+  border-radius: 13px;
+  padding: 9px 12px;
+  transition: border 0.15s;
+}
+.field:hover {
+  border-color: #d9cdf5;
+}
+.field label {
+  display: block;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+.field input {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ink);
+  outline: none;
+}
+.field input::placeholder {
+  color: #b6aed3;
+  font-weight: 600;
+}
+.searchcard button {
+  width: 100%;
+  margin-top: 8px;
+  background: linear-gradient(135deg, var(--coral), #ff7a3d);
+  color: #fff;
+  border: 0;
+  border-radius: 14px;
+  padding: 15px;
+  font: inherit;
+  font-size: 16.5px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 8px 22px rgba(240, 62, 49, 0.4);
+  transition: transform 0.12s;
+  position: relative;
+  overflow: hidden;
+}
+.searchcard button:hover {
+  transform: translateY(-1px);
+}
+.hot-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 22px;
+}
+.hot-chips a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  text-decoration: none;
+  background: rgba(255, 255, 255, 0.13);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 999px;
+  padding: 7px 14px;
+  backdrop-filter: blur(4px);
+}
+.hot-chips a b {
+  color: #ffe08a;
+}
+.trustbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  justify-content: center;
+  margin-top: 26px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.75);
+}
+.trustbar span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* ---------- how it works ---------- */
+.section {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 56px 24px;
+}
+.section h2 {
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  text-align: center;
+}
+.section .sub {
+  text-align: center;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink-soft);
+  margin-top: 6px;
+}
+.steps {
+  display: grid;
+  gap: 16px;
+  margin-top: 32px;
+  grid-template-columns: 1fr;
+}
+@media (min-width: 720px) {
+  .steps {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+.step {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 24px;
+  box-shadow: var(--shadow-sm);
+}
+.step .ico {
+  font-size: 30px;
+}
+.step h3 {
+  font-size: 17px;
+  font-weight: 800;
+  margin: 12px 0 6px;
+}
+.step p {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+
+/* ---------- deals showcase ---------- */
+.deals {
+  background: #f3eefb;
+}
+.deal-card {
+  max-width: 760px;
+  margin: 12px auto 0;
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 14px;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.12s, box-shadow 0.12s;
+}
+.deal-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+.dest {
+  flex: 0 0 68px;
+  width: 68px;
+  height: 68px;
+  border-radius: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 30px;
+  box-shadow: inset 0 -14px 20px rgba(0, 0, 0, 0.12);
+}
+.deal-card .route {
+  font-weight: 800;
+  font-size: 16.5px;
+  letter-spacing: -0.01em;
+  margin-top: 5px;
+}
+.deal-card .when {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+.deal-card .p {
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+.deal-card .p small {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ink-soft);
+  text-decoration: line-through;
+}
+
+/* ---------- footer ---------- */
+.site-footer {
+  background: #241a5e;
+  color: rgba(255, 255, 255, 0.8);
+  padding: 40px 24px;
+}
+.site-footer .inner {
+  max-width: 1080px;
+  margin: 0 auto;
+}
+.site-footer .row1 {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  justify-content: space-between;
+  align-items: center;
+}
+.site-footer .disc {
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.6);
+  max-width: 620px;
+  margin-top: 14px;
+}
+
+/* ---------- MOTION (CSS/SVG only, respects reduced-motion) ---------- */
+.flame {
+  display: inline-block;
+  vertical-align: -2px;
+  transform-origin: 50% 92%;
+  animation: flick 0.45s ease-in-out infinite alternate;
+  filter: drop-shadow(0 1px 4px rgba(255, 110, 40, 0.55));
+}
+@keyframes flick {
+  from {
+    transform: scaleY(1) scaleX(1);
+  }
+  to {
+    transform: scaleY(1.14) scaleX(0.92);
+  }
+}
+.star {
+  animation: twinkle 2.6s ease-in-out infinite;
+}
+@keyframes twinkle {
+  0%,
+  100% {
+    opacity: 0.85;
+  }
+  50% {
+    opacity: 0.1;
+  }
+}
+.cloud {
+  animation: drift 9s ease-in-out infinite alternate;
+}
+@keyframes drift {
+  from {
+    transform: translateX(-14px);
+  }
+  to {
+    transform: translateX(20px);
+  }
+}
+.floaty {
+  animation: floaty 3.8s ease-in-out infinite;
+}
+@keyframes floaty {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-1deg);
+  }
+  50% {
+    transform: translateY(-5px) rotate(1.5deg);
+  }
+}
+.searchcard button::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 36%;
+  left: 0;
+  background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.5), transparent);
+  animation: sweep 3.2s ease-in-out infinite;
+}
+@keyframes sweep {
+  0% {
+    transform: translateX(-130%) skewX(-18deg);
+  }
+  55%,
+  100% {
+    transform: translateX(320%) skewX(-18deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
