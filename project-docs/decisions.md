@@ -1,5 +1,17 @@
 # Decisions — DealRadar (append-only)
 
+## 2026-07-11 — D18 (user directive): Design elevation pass — premium/cinematic, mockup-first
+After seeing Group A live, user verdict: graph + overall look "not classy and premium…
+looks cheap… very normal"; wants **bold, futuristic, cinematic, travel-feel, lively**
+("$100K"). Supersedes v2's look as the bar (v2 structure/mascot stay unless mockup v3
+changes them). User is also **cost-conscious about Claude credits** → the pass MUST follow
+the mockup-first rule: build `mockups/v3-cinematic.html` as ONE standalone file, iterate
+there in the live preview (batched feedback rounds, no build/deploy per tweak), sign off,
+then port once. Open design decision for the mockup: keep the CSS/SVG-only perf gate vs
+allow optimized photography/AVIF (real cinematic feel usually needs imagery; small
+Lighthouse tradeoff) — present both in v3 for sign-off. Group A itself is BUILT/live
+(fare_calendar data layer, chart, stat rows, /blog) — v3 restyles, doesn't rebuild.
+
 ## 2026-07-11 — D17 (user directive; sequence needs sign-off): Scope expansion — worldwide + rich UX
 User directives (post-D16 review of the live site): (1) calendar date-picker on search
 dates; (2) replace monthly price boxes with a professional trend graph — current route
