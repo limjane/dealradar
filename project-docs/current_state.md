@@ -42,10 +42,13 @@ Also: confirm Vercel → Firewall → Attack Challenge Mode is OFF so crawlers a
 First real poll ran: real Travelpayouts token + Neon → **10/10 routes, 23 snapshots, 0
 errors** (months 07/08/09, sane prices). Adapter corrected for the month-ignoring endpoint
 (D15). **≥14-day verdict clock started 2026-07-11 → usable ~2026-07-25.**
-**⚠ For daily accrual, update Render env:** the two cron services still have the old fake
-`AMADEUS_*` vars — replace with `TRAVELPAYOUTS_TOKEN` (real value in local `.env`) + keep
-`DATABASE_URL`. Until then, only today's manual run is recorded; tomorrow's won't fire.
-Next build task = **task 4 (deal scoring)** once ~14 days of history exist.
+**✅ Daily accrual LIVE (verified 2026-07-11):** Render `dealradar-poll` cron ran
+successfully via Trigger Run and wrote 23 rows to Neon (46 total incl. the manual run) —
+full Render→Travelpayouts→Neon path proven in production. Env vars correct on both crons
+(`DATABASE_URL` + `TRAVELPAYOUTS_TOKEN`); the blueprint auto-synced away the old `AMADEUS_*`.
+Now hands-off: polls 10 routes daily at 21:00 UTC (5am SGT), scores 30 min later.
+Next build task = **task 4 (deal scoring)** once ~14 days of history exist (~2026-07-25).
+(Minor: 2026-07-11 has a duplicate snapshot batch — manual + Render run; harmless.)
 
 ## (history) Task 3 — worker polling — CODE-COMPLETE, live run pending token
 Built (committed): `worker/providers/` (`PriceSource` protocol + `TravelpayoutsPriceSource`
