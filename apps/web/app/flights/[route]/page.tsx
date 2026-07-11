@@ -98,6 +98,18 @@ export default async function RoutePage({ params }: { params: Promise<{ route: s
           </p>
         )}
 
+        {cheapestDay && (
+          <p style={{ textAlign: "center", marginTop: 16 }}>
+            <Link
+              href={`/go/aviasales?to=${d.code}&date=${cheapestDay.departDate}`}
+              className="go-cta"
+              prefetch={false}
+            >
+              Go to deal →
+            </Link>
+          </p>
+        )}
+
         {lo !== null && hi !== null && med !== null && (
           <div className="statrow">
             <div className="stat">

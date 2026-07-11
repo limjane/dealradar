@@ -1,5 +1,30 @@
 # Decisions — DealRadar (append-only)
 
+## 2026-07-11 — D20: vendor click-out built (D17 Group D, pulled forward) — single-vendor, multi-partner deferred
+Built `/go/[provider]` redirect + "Go to deal" CTAs on /deals and /flights/[route] (Sonnet
+session). **Single vendor for now: Aviasales** (Travelpayouts' own search/booking site, same
+account/token as our price source). User initially asked why not show the cheapest of
+several partners (Trip.com, Aviasales, etc.) — answer recorded here: our only price data is
+Travelpayouts' `/v1/prices/calendar`, which reflects Aviasales-observed fares only; we have
+no per-vendor pricing for Trip.com/Kiwi/Booking (separate affiliate APIs, not integrated).
+Picking a "cheapest partner" today would be cosmetic, not real. **Backlog (real task, not
+started):** integrate additional Travelpayouts-partner price sources so `/go` can compare
+and route to the actual cheapest vendor, not just Aviasales.
+**Design:** `lib/go-links.ts` whitelists provider + validates destination/date before
+building any URL (foundation.md §4.3 — never redirect to a caller-supplied URL). URL format
+`aviasales.com/search/{ORIGIN}{DDMM}{DEST}1`, no `marker=` yet — added in `aviasalesUrl()`
+(the one function that builds this provider's links) once Travelpayouts approval lands.
+Invalid provider/destination/date all fall back to `/deals` rather than erroring.
+**Verified live in dev:** `/deals` cards + route-page CTA both link correctly; redirect to
+`/go/aviasales?to=DPS&date=2026-09-15` resolved to `aviasales.com/search/SIN1509DPS1`;
+bogus provider/dest/date all fell back to `/deals` (checked via network log, not just code
+reading). `next build`, typecheck, lint all green.
+**Local dev note:** created `apps/web/.env.local` (gitignored) with `DATABASE_URL` copied
+from root `.env` — Next.js only auto-loads env files from the app's own directory, not the
+monorepo root, so `pnpm dev` was failing with "Invalid environment variables" before this.
+Same OneDrive-folder `.next` readlink quirk as before; deleting `.next` before first `dev`
+run cleared it.
+
 ## 2026-07-11 — D19 (user directives, batch 2): global default-origin, bug fix, ways of working, backlog
 1. **Global from day one (amends D17 Group B):** launch is NOT SG-only. Deals/search default
    the "From" to the **visitor's country (geo-IP)** with a manual country/origin switcher.

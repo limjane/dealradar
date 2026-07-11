@@ -2,7 +2,7 @@
 
 _Read this first each session; update it last. The blueprint lives in `foundation.md` — grep it, don't re-read it whole._
 
-**Last updated:** 2026-07-10 (deploys mostly live; provider pivot D10; task 3 code-complete + DB path verified, live poll pending token.)
+**Last updated:** 2026-07-11 (vendor click-out links shipped, D20 — see Next session.)
 
 ## Phase
 **BUILD.** Task 2 (scaffold + deploy) all but done. Live services:
@@ -92,16 +92,36 @@ shape). Adapter codes to the documented contract — confirm on first real run.
 fine). See prior notes — fix eye only.
 
 ## Next session
+**Vendor click-out links — ✅ DONE + VERIFIED LIVE-IN-DEV (2026-07-11, Sonnet session).**
+`/go/[provider]` redirect + "Go to deal" CTAs shipped on /deals and /flights/[route],
+single vendor (Aviasales) for now — see D20 for the "why not cheapest-of-several-partners"
+answer and the real multi-partner backlog item. Styling kept minimal (small pill CTA, no
+layout redesign). `next build`/typecheck/lint green; redirect + fallback behavior verified
+against a live local dev server (not just code reading).
+**NEXT TASK (pick one):** (a) multi-partner price sources for `/go` (D20 backlog — real
+build, not started); (b) resume the ON-HOLD items below (v3 mockup feedback, QA/staging);
+(c) task 4 deal scoring once ~14 days of history exist (~2026-07-25). Start with
+`/faresteal-next` and the state doc will re-propose whichever makes sense at that time.
+
+**ON HOLD (user, 2026-07-11):** (a) v3 cinematic mockup — built, awaiting the user's
+batched feedback round (4 sign-off items at the bottom of the mockup + "fare scan" label
+reframe); (b) QA/staging setup (Vercel preview deploys per branch + Neon DB branch —
+discussed, not yet decided/recorded). Resume both after the fix.
+
 **D17 sequence signed off ("go A") — Group A BUILT + pushed 2026-07-11:** `fare_calendar`
 table (migrated), worker writes per-date fares (160 rows live, 1 call/route), route pages
 rebuilt with stat row + SVG price-by-date chart (mockup style, real data), /blog with 4
 articles, footer/sitemap wired. Local gates green (lint/types/build, 9 worker tests).
 **Live verification pending** — my curl polling re-tripped Vercel's bot challenge (2nd
 time; see memory note — verify with ONE delayed request only, or user eyeballs it).
-**Next session (ONE task, use Fable/Opus): D18 design elevation — `mockups/v3-cinematic.html`.**
-User wants premium/cinematic/bold ("$100K feel"); current look rejected as "cheap/normal".
-Mockup-first (iterate in live preview, batched feedback, port once after sign-off — port can
-be a Sonnet session). Present CSS/SVG-only vs optimized-photography option in the mockup.
+**D18 mockup BUILT (2026-07-11): `project-docs/mockups/v3-cinematic.html` — awaiting batched
+feedback.** Cinematic dark design language (deep-space navy, glass cards, Space Grotesk +
+Fraunces italic accent, gold/coral CTAs, glowing gradient chart with typical-range band +
+low/today annotations). Contains BOTH hero options (A = pure CSS/SVG aurora+route-arcs,
+B = photography w/ Unsplash placeholder — production = self-hosted AVIF ≤90KB), photo vs
+no-photo deal tiles, night-scout Radar vs monogram, and a 4-item sign-off panel at the
+bottom (recommendations: B on home / photos in feed / keep mascot small). Iterate in THIS
+file on feedback; port to apps/web only after sign-off (port can be a Sonnet session).
 THEN Group B (Sonnet, plan in D17/D19) = worldwide search: autocomplete, date-picker, live
 results, flywheel, **geo-IP default origin with manual switcher (D19.1 — global launch)**.
 C = task 4 scoring (~2026-07-25). D = /go redirects the moment Travelpayouts approval lands.

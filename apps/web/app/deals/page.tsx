@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { getCheapestPerRoute, money, type RouteDeal } from "@/lib/deals";
+import { defaultDateForMonth } from "@/lib/go-links";
 import { DESTINATIONS, formatMonth, ORIGIN, routeSlug } from "@/lib/routes-meta";
 
 import { SiteFooter } from "../../components/site-footer";
@@ -53,23 +54,38 @@ export default async function DealsPage() {
               const meta = DESTINATIONS[d.destCode];
               if (!meta) return null;
               return (
-                <Link
-                  key={d.destCode}
-                  href={`/flights/${routeSlug(d.destCode)}`}
-                  className="deal-card"
-                  style={{ textDecoration: "none", color: "inherit" }}
-                >
-                  <div className="dest" style={{ background: meta.grad }}>
-                    {meta.emoji}
-                  </div>
-                  <div style={{ flex: 1 }}>
-                    <div className="route">
-                      {ORIGIN.city} → {meta.city} ({d.destCode})
+                <div key={d.destCode} className="deal-card">
+                  <Link
+                    href={`/flights/${routeSlug(d.destCode)}`}
+                    style={{
+                      display: "flex",
+                      flex: 1,
+                      gap: 14,
+                      alignItems: "center",
+                      minWidth: 0,
+                      textDecoration: "none",
+                      color: "inherit",
+                    }}
+                  >
+                    <div className="dest" style={{ background: meta.grad }}>
+                      {meta.emoji}
                     </div>
-                    <div className="when">Cheapest in {formatMonth(d.travelMonth)}</div>
-                  </div>
-                  <div className="p">{money(d.price, d.currency)}</div>
-                </Link>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div className="route">
+                        {ORIGIN.city} → {meta.city} ({d.destCode})
+                      </div>
+                      <div className="when">Cheapest in {formatMonth(d.travelMonth)}</div>
+                    </div>
+                    <div className="p">{money(d.price, d.currency)}</div>
+                  </Link>
+                  <Link
+                    href={`/go/aviasales?to=${d.destCode}&date=${defaultDateForMonth(d.travelMonth)}`}
+                    className="go-cta"
+                    prefetch={false}
+                  >
+                    Go to deal →
+                  </Link>
+                </div>
               );
             })}
           </div>
