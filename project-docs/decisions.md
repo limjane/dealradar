@@ -1,5 +1,40 @@
 # Decisions — DealRadar (append-only)
 
+## 2026-07-12 — D24: Blend the two Aviasales handoff journeys (keep split, unify the seams)
+User flagged that "Go to deal" (→ Aviasales direct) vs nav "Search flights" (→ our D23 form)
+felt inconsistent. **Decided (user: "ok let's try"):** keep the structural split — deal cards
+are high-intent and go straight out (like Skyscanner); open-ended search goes through our
+form — but make the handoff feel identical: (1) one shared disclosure line everywhere we send
+users out (`.handoff-note`: "Opens our booking partner Aviasales — same price, we may earn a
+commission"), under the form CTA, under route-page CTAs, and in the /deals footer note;
+(2) CTA copy aligned to price-promise voice — "Go to deal →" → **"See this fare →"**;
+(3) route pages cross-link "pick your own dates →" to `/search?to=CODE`, and /search reads
+`?to=` to pre-fill the form (only codes in DESTINATIONS get a label; anything else ignored).
+**Rejected:** interstitial form before deal clicks (adds a click to the highest-intent
+action); nav search jumping straight to Aviasales (loses the D23 branded form).
+Also fixed this session: hero `overflow: hidden` → `overflow-x: hidden` (was clipping the
+form's dropdown/calendar popovers — the "no dropdown" bug); calendar restyled softer
+(lighter shadow, flat coral selected state); dev-only `'unsafe-eval'` added to CSP
+script-src (Next dev-mode webpack needs eval; without it the page renders but nothing is
+clickable — prod unchanged).
+**⚠ Recurring environment issue:** the repo lives inside OneDrive; OneDrive sync corrupted
+`.next` THREE times this session (EINVAL readlink, UNKNOWN open on manifests). Workaround
+each time: delete `.next`, restart dev. Durable fix (user decision pending): move the repo
+out of OneDrive (e.g. C:\dev\dealradar) or stop OneDrive syncing it — note this changes the
+path every skill/doc references, so do it as its own deliberate task.
+## 2026-07-12 — D23 build complete: FlightSearchForm shipped, click-interactivity verification blocked by preview tool
+Build (Sonnet session) matches the D23 spec below exactly: new `components/flight-search-form.tsx`
+on home + /search, `lib/go-links.ts`/`/go/[provider]` extended for worldwide from/to + optional
+return leg (validation relaxed from destination-whitelist to IATA-shape, since D23 destinations
+are no longer limited to our 10 tracked routes), WL widget + its CSP entries removed.
+**Tooling note for future sessions:** spent significant effort chasing what looked like a
+hydration bug (no console logs, no fetches, no state updates on click) before proving via a
+throwaway trivial counter-button test that THIS preview harness doesn't register click-driven
+React interactivity at all in this environment — SSR render, build, typecheck all confirmed
+fine independently. Don't re-debug this from scratch next time: if click interactivity seems
+dead but SSR/build/typecheck are clean, suspect the harness first and ask the user to eyeball
+it in a real browser instead of burning a session on it.
+
 ## 2026-07-12 — D23: Search UX = our own branded form → Aviasales deep-link (retire the generic WL widget)
 **Decided (Opus session, user sign-off "Path A").** Two problems surfaced live: (1) the home
 hero "search" form was a static decorative mockup — unacceptable, must be interactive; (2)

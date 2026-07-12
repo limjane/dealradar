@@ -88,7 +88,7 @@ export default async function DealsPage() {
                     className="go-cta"
                     prefetch={false}
                   >
-                    Go to deal →
+                    See this fare →
                   </Link>
                 </div>
               );
@@ -105,8 +105,9 @@ export default async function DealsPage() {
             color: "var(--ink-soft)",
           }}
         >
-          Fares are the cheapest one-way prices our tracker has found and may be cached or
-          delayed. Confirm the final price on the provider&apos;s site. See our{" "}
+          &ldquo;See this fare&rdquo; opens our booking partner Aviasales — same price, we may
+          earn a commission. Fares are the cheapest one-way prices our tracker has found and
+          may be cached or delayed. Confirm the final price on the provider&apos;s site. See our{" "}
           <Link href="/disclosure" style={{ color: "var(--lilac)" }}>
             affiliate disclosure
           </Link>

@@ -99,15 +99,23 @@ export default async function RoutePage({ params }: { params: Promise<{ route: s
         )}
 
         {cheapestDay && (
-          <p style={{ textAlign: "center", marginTop: 16 }}>
+          <div style={{ textAlign: "center", marginTop: 16 }}>
             <Link
               href={`/go/aviasales?to=${d.code}&date=${cheapestDay.departDate}`}
               className="go-cta"
               prefetch={false}
             >
-              Go to deal →
+              See this fare →
             </Link>
-          </p>
+            <p className="handoff-note">
+              Opens our booking partner Aviasales — same price, we may earn a commission.
+              <br />
+              Or{" "}
+              <Link href={`/search?to=${d.code}`} style={{ color: "var(--lilac)" }}>
+                pick your own dates for {d.city} →
+              </Link>
+            </p>
+          </div>
         )}
 
         {lo !== null && hi !== null && med !== null && (

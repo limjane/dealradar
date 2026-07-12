@@ -10,6 +10,7 @@
 
 import Link from "next/link";
 
+import { FlightSearchForm } from "../components/flight-search-form";
 import { SiteFooter } from "../components/site-footer";
 
 // Reusable animated symbols: "fire" flame + "Radar" mascot base rig (wing/tail flap SMIL).
@@ -130,29 +131,7 @@ export default function Home() {
               We track fares every day, so you know a good price when you see one.
             </p>
 
-            <div className="searchcard">
-              <div className="fields">
-                <div className="field">
-                  <label>From</label>
-                  <input type="text" defaultValue="Singapore (SIN)" aria-label="From" />
-                </div>
-                <div className="field">
-                  <label>To</label>
-                  <input type="text" placeholder="Anywhere fun ✨" aria-label="To" />
-                </div>
-                <div className="field">
-                  <label>Depart</label>
-                  <input type="text" placeholder="12 Sep" aria-label="Depart" />
-                </div>
-                <div className="field">
-                  <label>Return</label>
-                  <input type="text" placeholder="+ Add" aria-label="Return" />
-                </div>
-              </div>
-              <Link href="/search" className="cta">
-                Check the price →
-              </Link>
-            </div>
+            <FlightSearchForm variant="hero" />
 
             <div className="hot-chips">
               <a href="#deals">🗼 Tokyo <b>fr S$312</b></a>

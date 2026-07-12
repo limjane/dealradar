@@ -2,22 +2,62 @@
 
 _Read this first each session; update it last. The blueprint lives in `foundation.md` — grep it, don't re-read it whole._
 
-**Last updated:** 2026-07-12 (⚠ D22 /search was NEVER committed last session — fixed: committed + pushed + deploying now. QA/staging also done earlier today.)
+**Last updated:** 2026-07-12 (D23 built + fully verified working; D24 handoff-blend shipped
+same day — see below. NOT yet committed/pushed: all D23+D24 changes are working-tree only.)
 
-## 🔜 NEXT BUILD — D23 branded search form (Path A, signed off 2026-07-12) — SONNET SESSION
-Design locked (D23). Replace BOTH the static home-hero mockup form AND the off-brand TP
-White Label widget on /search with ONE shared, on-brand `components/flight-search-form.tsx`:
-- From/To = airport autocomplete via TP's FREE Places API
-  (`autocomplete.travelpayouts.com/places2?term=…&locale=en&types[]=city&types[]=airport`;
-  host already CSP-allowed via `*.travelpayouts.com`).
-- Depart/Return = brand-styled date picker (build our own or a headless lib; no CSS-fighting dep).
-- Submit = Aviasales affiliate deep-link (extend the `/go` pattern to carry origin/dest/dates + marker).
-- Retire WL widget (wl_id=19722) as the /search UI; keep account/marker for the affiliate link.
-WHY: home form must be interactive (was a static mockup — user rejected); TP widget look-and-feel
-clashes with premium brand (D18). Live embedded RESULTS stay gated until 50k MAU (D21) — hence
-form-ours / results-via-Aviasales. Full rationale + rejected paths in decisions.md D23.
-Strict module boundary (new component file, not edits sprayed across pages) per D19.4.
-Starter prompt for next session: `/faresteal-next` → "build D23 branded search form (Path A)".
+## ⚠ NEXT SESSION FIRST: commit + push + verify on faresteal.com
+All of D23 (branded search form) + D24 (handoff blend) + the CSP/overflow fixes are
+**uncommitted working-tree changes**. Do not repeat the D22 mistake — commit, push, wait for
+Vercel, then have the user eyeball https://www.faresteal.com/search (one delayed request max;
+no curl loops — bot challenge). Files touched: components/flight-search-form.tsx (new),
+app/search/page.tsx, app/page.tsx, app/deals/page.tsx, app/flights/[route]/page.tsx,
+app/go/[provider]/route.ts, lib/go-links.ts, app/globals.css, next.config.ts, .claude/launch.json (new).
+
+## ⚠ ENVIRONMENT: OneDrive corrupts .next — user decision pending
+Repo lives in OneDrive; sync corrupted the dev `.next` cache 3× in one session (server 500s /
+EINVAL/UNKNOWN manifest errors, plus 7–26s compiles). Workaround: `rm -rf .next` + restart.
+Durable fix = move repo out of OneDrive or exclude it from sync — its own task (all skill/doc
+paths change). Also: user's regular Chrome profile has an extension injecting `data-sharkid`
+attrs → hydration mismatch; test in Incognito.
+
+## ✅ D24 handoff blend — BUILT + VERIFIED IN DEV (2026-07-12, Fable session)
+Deal-CTA and search-form journeys now share one visual/verbal handoff (full rationale D24):
+shared `.handoff-note` disclosure everywhere we send users to Aviasales; "Go to deal →" →
+"See this fare →" (/deals + route pages); route pages cross-link "pick your own dates →" to
+`/search?to=CODE`; /search pre-fills the form from `?to=`. Verified live in dev: pre-fill
+renders "Bali (DPS)", both /go link shapes redirect correctly (one-way `to`+`date` →
+`SIN0911DPS1`; round-trip `from/to/depart/return` → `SIN0911DPS1611SIN1`). Also fixed the
+"no dropdown" bug (hero `overflow:hidden` clipped the popovers → `overflow-x`), softened the
+calendar styling, and added dev-only `'unsafe-eval'` to CSP (dev-mode webpack needs it;
+without it the form renders but nothing responds to clicks). Autocomplete verified live:
+typing fires the Places API and renders 8 suggestions.
+
+## ✅ D23 branded search form — BUILT (2026-07-12, Sonnet session)
+`components/flight-search-form.tsx` (new, single shared component per D19.4 module boundary)
+now powers BOTH the home hero and /search, replacing the static hero mockup and the retired
+Travelpayouts White Label widget:
+- From/To: live airport autocomplete via TP's free Places API (debounced fetch,
+  `autocomplete.travelpayouts.com/places2`) — confirmed working with a direct browser fetch
+  (12 results for "Tokyo", real IATA codes/coords).
+- Depart/Return: small custom calendar popover (own build, no date-picker dep), return
+  disabled before depart.
+- Submit: `router.push('/go/aviasales?from=…&to=…&depart=…&return=…')`.
+- `lib/go-links.ts` + `app/go/[provider]/route.ts` extended for worldwide origin/destination
+  + optional round-trip leg; validation changed from whitelist-membership to IATA-shape only
+  (D23 makes destinations arbitrary/worldwide, not just our 10 tracked routes) — legacy
+  `to`+`date` one-way callers (/deals, /flights/[route]) unchanged, still resolve correctly.
+- Retired WL widget script/divs; pruned now-dead CSP entries (tpembd.com, avsplow.com,
+  fonts.googleapis/gstatic — all were widget-only, site self-hosts fonts via next/font).
+- `next build`/typecheck/lint all green.
+**⚠ Verification gap:** could not confirm click-driven interactivity (autocomplete dropdown
+opening, calendar popover, submit → correct /go URL) in the preview harness — a *minimal
+throwaway counter-button test* (unrelated to this component) also failed to register clicks
+in the same session, isolating this to a preview-tool/environment limitation, not the new
+code. SSR render, build, typecheck, and the underlying TP API call were all verified
+directly. **NEXT: user should manually click through the form on a real browser (dev server
+or after deploy) before this is called fully done** — specifically: type a destination and
+confirm the dropdown appears, pick dates, submit, and confirm it lands on an Aviasales URL
+with the right origin/dest/dates.
 
 ## ✅ /search 404 + CSP — RESOLVED (2026-07-12, this session)
 D22 was never committed (see correction below) → committed + deployed (722be26). Then live

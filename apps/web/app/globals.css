@@ -101,7 +101,8 @@ nav.site a.pill {
   position: relative;
   padding: 0 0 96px;
   background: linear-gradient(165deg, #241a5e 0%, #4b2585 34%, #b23a79 66%, #ff8e53 100%);
-  overflow: hidden;
+  overflow-x: hidden; /* clip the starfield/clouds horizontally only — overflow:hidden on
+    both axes was also clipping the search form's dropdown/calendar popovers (D23) */
 }
 .hero .sky {
   position: absolute;
@@ -204,6 +205,170 @@ nav.site a.pill {
   color: #b6aed3;
   font-weight: 600;
 }
+
+/* ---------- branded search form: autocomplete + date picker (D23) ---------- */
+.ac-field,
+.date-field {
+  position: relative;
+}
+.searchcard-page {
+  max-width: 660px;
+  box-shadow: var(--shadow-md);
+}
+.date-trigger {
+  display: block;
+  width: 100%;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ink);
+  text-align: left;
+  padding: 0;
+  cursor: pointer;
+}
+.date-clear {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  border: 0;
+  background: transparent;
+  color: var(--ink-soft);
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 4px;
+}
+.ac-list,
+.cal-pop {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 20;
+  background: var(--card);
+  border-radius: 14px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--line);
+  padding: 8px;
+}
+.ac-list {
+  list-style: none;
+  margin: 0;
+  min-width: 240px;
+  max-height: 280px;
+  overflow-y: auto;
+}
+.ac-list li button {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  border: 0;
+  background: transparent;
+  padding: 8px 10px;
+  border-radius: 9px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+}
+.ac-list li button:hover {
+  background: var(--bg);
+}
+.ac-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ac-code {
+  flex-shrink: 0;
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--ink-soft);
+  letter-spacing: 0.04em;
+}
+.cal-pop {
+  width: 260px;
+}
+.cal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 4px 10px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink);
+}
+.cal-head button {
+  border: 0;
+  background: transparent;
+  color: var(--ink-soft);
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  font-size: 15px;
+  cursor: pointer;
+}
+.cal-head button:hover {
+  background: var(--bg);
+  color: var(--ink);
+}
+.cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+.cal-weekdays {
+  margin-bottom: 2px;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--ink-soft);
+  text-align: center;
+}
+.cal-day {
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 500;
+  padding: 7px 0;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.cal-day:hover:not(:disabled) {
+  background: var(--bg);
+}
+.cal-day:disabled {
+  color: #ded8ec;
+  cursor: not-allowed;
+}
+.cal-day-selected {
+  background: var(--coral);
+  color: #fff;
+  font-weight: 700;
+}
+.search-error {
+  color: var(--coral);
+  font-size: 12.5px;
+  font-weight: 700;
+  padding: 6px 4px 0;
+}
+/* One shared handoff message wherever we send users to the booking partner (D24) —
+   same words, same look, so the Aviasales jump never feels like a different product. */
+.handoff-note {
+  margin-top: 10px;
+  font-size: 11.5px;
+  font-weight: 600;
+  line-height: 1.6;
+  color: var(--ink-soft);
+  text-align: center;
+}
+
 .searchcard button,
 .searchcard .cta {
   display: block;

@@ -1,23 +1,36 @@
 /**
- * /search — Travelpayouts White Label (Widget type) embedded on our own page (D22).
- * Loader script renders a search form into #tpwl-search and results into #tpwl-tickets;
- * users book without leaving faresteal.com. Worldwide destinations, origin left to the
- * widget's geo-IP default (D19.1) — no origin code on our side.
+ * /search — our own branded search form (D23), replacing the retired Travelpayouts White
+ * Label widget (D22: off-brand look, clashed with the cinematic direction). Submitting
+ * deep-links to Aviasales via /go (see lib/go-links.ts); on-brand embedded results return
+ * once the Aviasales Search API ungates at 50k MAU (D21).
  */
 
 import type { Metadata } from "next";
 import Link from "next/link";
-import Script from "next/script";
 
+import { DESTINATIONS } from "@/lib/routes-meta";
+
+import { FlightSearchForm } from "../../components/flight-search-form";
 import { SiteFooter } from "../../components/site-footer";
 
 export const metadata: Metadata = {
   title: "Search flights — FareSteal",
-  description: "Search and book flights worldwide, powered by FareSteal's fare partners.",
+  description: "Search flights worldwide with FareSteal — compare fares via our booking partners.",
   robots: { index: false, follow: true },
 };
 
-export default function SearchPage() {
+export default async function SearchPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ to?: string }>;
+}) {
+  // Carry route-page context into the form (?to=DPS) so arriving from a tracked route
+  // doesn't feel like starting over on a different product.
+  const { to } = await searchParams;
+  const code = to?.toUpperCase() ?? "";
+  const meta = /^[A-Z]{3}$/.test(code) ? DESTINATIONS[code] : undefined;
+  const initialTo = meta ? { code: meta.code, label: `${meta.city} (${meta.code})` } : null;
+
   return (
     <>
       <header className="doc-header">
@@ -30,18 +43,13 @@ export default function SearchPage() {
 
       <main className="section">
         <h2>Search flights</h2>
-        <p className="sub">Worldwide fares from our booking partners — book without leaving FareSteal.</p>
+        <p className="sub">
+          Pick your route and dates — we hand you to our booking partner at the same price.
+        </p>
 
-        <div id="tpwl-search" style={{ marginTop: 24 }} />
-        <div id="tpwl-tickets" style={{ marginTop: 24 }} />
-        <div id="tpwl-modals" />
-
-        <Script
-          id="tpwl-loader"
-          strategy="afterInteractive"
-          src="https://tpembd.com/wl_web/main.js?wl_id=19722"
-          type="module"
-        />
+        <div style={{ marginTop: 24 }}>
+          <FlightSearchForm variant="page" initialTo={initialTo} />
+        </div>
       </main>
 
       <SiteFooter />
