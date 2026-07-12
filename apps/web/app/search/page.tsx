@@ -34,6 +34,7 @@ export default function SearchPage() {
 
         <div id="tpwl-search" style={{ marginTop: 24 }} />
         <div id="tpwl-tickets" style={{ marginTop: 24 }} />
+        <div id="tpwl-modals" />
 
         <Script
           id="tpwl-loader"
