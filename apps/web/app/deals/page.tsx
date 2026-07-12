@@ -35,7 +35,12 @@ export default async function DealsPage() {
 
       <main className="section">
         <h2>Cheapest fares from Singapore right now</h2>
-        <p className="sub">Live from our daily fare tracking · prices are one-way, from</p>
+        <p className="sub">
+          Live from our daily fare tracking · prices are one-way, from · or{" "}
+          <Link href="/search" style={{ color: "var(--lilac)" }}>
+            search any route worldwide
+          </Link>
+        </p>
 
         {deals.length === 0 ? (
           <p

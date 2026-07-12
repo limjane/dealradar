@@ -1,5 +1,74 @@
 # Decisions — DealRadar (append-only)
 
+## 2026-07-12 — D22 build complete: /search shipped, CSP opened for tpembd.com
+Steps 2–4 of D22 done (Sonnet session). `apps/web/app/search/page.tsx` added (chrome +
+noindex + the two WL divs + `next/script` loader). CSP in `next.config.ts` widened:
+`script-src` gained `https://tpembd.com`; `connect-src`/new `frame-src` gained
+`tpembd.com`, `*.travelpayouts.com`, `*.aviasales.com` (widget's own network calls aren't
+documented by TP, so scoped to their known domains rather than left at `'self'`). Entry
+points wired per step 3: home hero CTA + nav pill → /search, footer nav (site-wide) gains
+Search, /deals subhead cross-links to /search.
+**Verification finding:** on `localhost:3000/search` the widget script loads (200, no CSP
+violations) but paints nothing into `#tpwl-search`/`#tpwl-tickets` — most likely TP's WL
+widgets are domain-locked to the project's registered domain (faresteal.com) and silently
+no-op elsewhere. This isn't a CSP or wiring bug (network trace is clean); local dev cannot
+fully prove the widget works. **Open follow-up:** confirm on the live faresteal.com domain
+after next deploy (user eyeballs, no curl loops — bot-challenge rule) that a real search
+returns bookable results.
+
+## 2026-07-11 — D22: /search = White Label WIDGET-type embedded on faresteal.com/search (worldwide, geo-IP default origin)
+Scoped the D21 interim search option (Fable session; user signed off "Widget-type on
+/search"). Travelpayouts **White Label, Widget type**: embed the WL script + two divs
+(`<div id="tpwl-search">` form, `<div id="tpwl-tickets">` results) on our own page —
+users get real multi-agency bookable results **without leaving faresteal.com**, monetized
+under our marker. Free, ungated (no MAU floor). Rejected: Page-type WL on
+search.faresteal.com (TP-hosted, CNAME→whitelabel.travelpayouts.com, up to 72h DNS —
+visible hop off-site for no gain) and plain Aviasales search-form widget (results open on
+Aviasales — users leave immediately).
+**Worldwide + user-country default (user requirement, aligns w/ D19.1):** leave the
+widget's default departure city EMPTY → origin auto-detects from user IP; destinations
+worldwide. No geo code on our side.
+**Facts:** design customization = colors/font/border-radius/logo via TP dashboard (HEX) —
+approximates FareSteal look, won't pixel-match; rev share sources conflict (30% vs "up to
+70%") — read the real % off the dashboard, doesn't change the choice; domain must not
+contain travel brand names (faresteal.com fine).
+**Build scope (Sonnet session, one task):**
+1. USER (dashboard): Tools → White Label (Widget type) on the DealRadar TP project → main
+   lang EN + currency (add more later) → set FareSteal colors → copy widget + results codes.
+   If the WL tool turns out to be gated on project approval, this blocks on the pending
+   resubmission (already a user action).
+2. BUILD `apps/web` `/search`: client component that injects the WL script post-hydration
+   with the two divs; page chrome (nav/footer/OG) matching site; `noindex` on /search
+   (TP results content, not ours to index).
+3. WIRE entry points: home search CTA → /search (closes the D16 "functional search inputs"
+   polish item), nav + footer links, /deals cross-link.
+4. VERIFY on local dev server (widget renders, a search returns results); live check =
+   ONE delayed request or user eyeballs (no curl loops — bot challenge).
+**Relation to Group B:** this is the interim search. Group B native search (Aviasales
+Search API, autocomplete, our own UI) still revisits at ≥50k MAU per D21.
+Sources: TP help 26857907357458 (widget-type setup), 203955753 (WL overview),
+8505942823954 (search form IP geo-detect), 16436383582226 (WL setup guide).
+
+## 2026-07-11 — D21: multi-partner /go routing BLOCKED on Search API gate — shelved to post-launch
+Researched the D20 backlog item (route /go to the actual cheapest vendor). The real
+mechanism is the **Aviasales Flights Search API** (real-time): one search returns
+`proposals[]`, each from a different booking agency (`gate_id` — Trip.com, Kiwi, etc.)
+with its own price + 15-min deep link, all under our existing Travelpayouts account — no
+separate affiliate signups needed. BUT access requires **≥50,000 MAU** (confirmed via
+analytics screenshot at application) plus conversion floors (≥9% search→Book click,
+≥5% click→purchase), results page robots.txt-blocked, no auto-link-harvesting.
+https://support.travelpayouts.com/hc/en-us/articles/210995808
+**Decision:** shelve multi-partner routing until traffic qualifies — it is a gated API,
+not an engineering gap. No cosmetic multi-vendor UI in the meantime (re-affirms D20).
+**Interim option (future task, ungated):** Travelpayouts **White Label / search widgets**
+give visitors real multi-agency bookable search monetized under our marker, no MAU
+requirement — candidate for a native-feeling /search page pre-50k.
+**MAU monitoring:** = unique visitors / 30 days in Plausible (locked, task 9) or Vercel
+Analytics as a stopgap. Nothing to build; check the dashboard, apply at 50k.
+**Strategy note (user asked "how did Skyscanner start?"):** early metas built their own
+aggregation (scraping + direct airline deals) and grew on SEO route-page content — same
+ladder we're on: verdicts/history content first, search breadth later. Wedge unchanged.
+
 ## 2026-07-11 — D20: vendor click-out built (D17 Group D, pulled forward) — single-vendor, multi-partner deferred
 Built `/go/[provider]` redirect + "Go to deal" CTAs on /deals and /flights/[route] (Sonnet
 session). **Single vendor for now: Aviasales** (Travelpayouts' own search/booking site, same

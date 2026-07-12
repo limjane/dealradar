@@ -11,6 +11,7 @@ export function SiteFooter() {
           </div>
           <nav className="foot-nav">
             <Link href="/">Home</Link>
+            <Link href="/search">Search</Link>
             <Link href="/deals">Deals</Link>
             <Link href="/blog">Blog</Link>
             <Link href="/about">About</Link>

@@ -100,8 +100,9 @@ export default function Home() {
             </div>
             <nav className="site">
               <a href="#how">How it works</a>
-              <Link href="/deals" className="pill">
-                Today&apos;s deals
+              <Link href="/deals">Today&apos;s deals</Link>
+              <Link href="/search" className="pill">
+                Search flights
               </Link>
             </nav>
           </header>
@@ -148,7 +149,7 @@ export default function Home() {
                   <input type="text" placeholder="+ Add" aria-label="Return" />
                 </div>
               </div>
-              <Link href="/deals" className="cta">
+              <Link href="/search" className="cta">
                 Check the price →
               </Link>
             </div>
