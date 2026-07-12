@@ -2,7 +2,7 @@
 
 _Read this first each session; update it last. The blueprint lives in `foundation.md` — grep it, don't re-read it whole._
 
-**Last updated:** 2026-07-11 (vendor click-out links shipped, D20 — see Next session.)
+**Last updated:** 2026-07-12 (QA/staging setup complete — Neon-Vercel integration wired, tested live)
 
 ## Phase
 **BUILD.** Task 2 (scaffold + deploy) all but done. Live services:
@@ -91,6 +91,9 @@ shape). Adapter codes to the documented contract — confirm on first real run.
 `mockups/v2-fun-travel.html`, hero: FLYING mascot's eye pupil not visible (perched pose
 fine). See prior notes — fix eye only.
 
+## QA/Staging — ✅ DONE (2026-07-12)
+**Neon-Vercel integration wired:** Installed Neon integration in Vercel, linked existing `dealradar` Neon project to `dealradar-web`, configured Preview environments. **Verified live:** pushed test branch → Vercel auto-deployed preview → Neon auto-created preview branch → merged PR → Neon branch auto-deleted. Production (Vercel `main` branch) stays locked to Neon's Default branch; each preview deployment gets an isolated staging DB. Zero manual database branch management going forward.
+
 ## Next session
 **Vendor click-out links — ✅ DONE + VERIFIED LIVE-IN-DEV (2026-07-11, Sonnet session).**
 `/go/[provider]` redirect + "Go to deal" CTAs shipped on /deals and /flights/[route],
@@ -98,15 +101,14 @@ single vendor (Aviasales) for now — see D20 for the "why not cheapest-of-sever
 answer and the real multi-partner backlog item. Styling kept minimal (small pill CTA, no
 layout redesign). `next build`/typecheck/lint green; redirect + fallback behavior verified
 against a live local dev server (not just code reading).
-**NEXT TASK (pick one):** (a) multi-partner price sources for `/go` (D20 backlog — real
-build, not started); (b) resume the ON-HOLD items below (v3 mockup feedback, QA/staging);
-(c) task 4 deal scoring once ~14 days of history exist (~2026-07-25). Start with
-`/faresteal-next` and the state doc will re-propose whichever makes sense at that time.
+**NEXT TASK (pick one):** (a) v3 mockup sign-off — review `mockups/v3-cinematic.html`, provide
+batched feedback (4 sign-off items + "fare scan" label reframe); (b) task 4 deal scoring
+once ~14 days history exist (~2026-07-25); (c) user eyeballs **https://www.faresteal.com/search**
+to confirm White Label widget renders + functions on prod domain. Start with `/faresteal-next`
+and the state doc will re-propose whichever makes sense at that time.
 
-**ON HOLD (user, 2026-07-11):** (a) v3 cinematic mockup — built, awaiting the user's
-batched feedback round (4 sign-off items at the bottom of the mockup + "fare scan" label
-reframe); (b) QA/staging setup (Vercel preview deploys per branch + Neon DB branch —
-discussed, not yet decided/recorded). Resume both after the fix.
+**ON HOLD (user, 2026-07-11):** v3 cinematic mockup — built, awaiting batched feedback.
+~~QA/staging~~ → ✅ DONE 2026-07-12 (Neon-Vercel integration live, tested end-to-end).
 
 **D17 sequence signed off ("go A") — Group A BUILT + pushed 2026-07-11:** `fare_calendar`
 table (migrated), worker writes per-date fares (160 rows live, 1 call/route), route pages
