@@ -1,5 +1,7 @@
 # DealRadar
 
+<!-- Test branch for staging/QA setup verification (2026-07-12) -->
+
 Flight search with price-intelligence verdicts. Monorepo:
 
 - `apps/web` — Next.js 15 (App Router, TS strict) on **Vercel**. Pages, `/api`, `/go` redirect. Owns the DB schema (Drizzle).
