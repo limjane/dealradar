@@ -2,7 +2,21 @@
 
 _Read this first each session; update it last. The blueprint lives in `foundation.md` — grep it, don't re-read it whole._
 
-**Last updated:** 2026-07-12 (QA/staging setup complete — Neon-Vercel integration wired, tested live)
+**Last updated:** 2026-07-12 (⚠ D22 /search was NEVER committed last session — fixed: committed + pushed + deploying now. QA/staging also done earlier today.)
+
+## ⚠ CORRECTION — D22 /search was never actually shipped (fixed 2026-07-12)
+Last session built /search + CSP + nav links, verified on a LOCAL DEV SERVER (reads the
+working tree, not git), marked it "done + verified," and updated this doc — **but never ran
+`git commit`/`push`.** Production faresteal.com 404'd on /search the whole time. All 7 files
+sat as uncommitted working-tree changes. **Fixed this session:** `next build` re-verified
+green (/search in route table), committed (722be26) + pushed to main → Vercel deploying.
+LESSON: "verified" must mean *deployed to prod + a real interaction run on the live domain* —
+NOT "worked on the local dev server." A local dev server proves nothing about production for
+a domain-locked widget. Do not mark widget/UI work "done" until it's confirmed on the live URL.
+NEXT: once deploy lands, confirm /search loads (no 404), THEN diagnose the widget's
+autocomplete-dropdown + date-calendar (user reports both non-functional — likely CSP
+`connect-src` blocking the widget's airport-suggest / per-date-price fetches; need live
+console CSP-violation errors to know exact domains to whitelist).
 
 ## Phase
 **BUILD.** Task 2 (scaffold + deploy) all but done. Live services:
