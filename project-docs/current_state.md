@@ -4,6 +4,31 @@ _Read this first each session; update it last. The blueprint lives in `foundatio
 
 **Last updated:** 2026-07-12 (⚠ D22 /search was NEVER committed last session — fixed: committed + pushed + deploying now. QA/staging also done earlier today.)
 
+## 🔜 NEXT BUILD — D23 branded search form (Path A, signed off 2026-07-12) — SONNET SESSION
+Design locked (D23). Replace BOTH the static home-hero mockup form AND the off-brand TP
+White Label widget on /search with ONE shared, on-brand `components/flight-search-form.tsx`:
+- From/To = airport autocomplete via TP's FREE Places API
+  (`autocomplete.travelpayouts.com/places2?term=…&locale=en&types[]=city&types[]=airport`;
+  host already CSP-allowed via `*.travelpayouts.com`).
+- Depart/Return = brand-styled date picker (build our own or a headless lib; no CSS-fighting dep).
+- Submit = Aviasales affiliate deep-link (extend the `/go` pattern to carry origin/dest/dates + marker).
+- Retire WL widget (wl_id=19722) as the /search UI; keep account/marker for the affiliate link.
+WHY: home form must be interactive (was a static mockup — user rejected); TP widget look-and-feel
+clashes with premium brand (D18). Live embedded RESULTS stay gated until 50k MAU (D21) — hence
+form-ours / results-via-Aviasales. Full rationale + rejected paths in decisions.md D23.
+Strict module boundary (new component file, not edits sprayed across pages) per D19.4.
+Starter prompt for next session: `/faresteal-next` → "build D23 branded search form (Path A)".
+
+## ✅ /search 404 + CSP — RESOLVED (2026-07-12, this session)
+D22 was never committed (see correction below) → committed + deployed (722be26). Then live
+console revealed the WL widget's data fetches to **avsplow.com** and its Google Fonts
+stylesheet were CSP-blocked, and `#tpwl-modals` was missing. Fixed in `next.config.ts`
+(`connect-src`/`frame-src` += avsplow.com/*.avsplow.com; `style-src` += fonts.googleapis.com;
+`font-src` += fonts.gstatic.com) + added `#tpwl-modals` div; deployed. NOTE: D23 will retire
+this widget anyway, so the CSP-for-widget entries become dead once the branded form ships —
+the fonts.googleapis/gstatic entries may still be useful; avsplow/tpembd can be pruned then.
+(Widget functional-on-live not user-confirmed before the Path-A pivot; moot under D23.)
+
 ## ⚠ CORRECTION — D22 /search was never actually shipped (fixed 2026-07-12)
 Last session built /search + CSP + nav links, verified on a LOCAL DEV SERVER (reads the
 working tree, not git), marked it "done + verified," and updated this doc — **but never ran

@@ -1,5 +1,34 @@
 # Decisions — DealRadar (append-only)
 
+## 2026-07-12 — D23: Search UX = our own branded form → Aviasales deep-link (retire the generic WL widget)
+**Decided (Opus session, user sign-off "Path A").** Two problems surfaced live: (1) the home
+hero "search" form was a static decorative mockup — unacceptable, must be interactive; (2)
+the Travelpayouts White Label widget on /search looks generic/off-brand, clashing with the
+premium cinematic direction (D18).
+**Hard constraint driving this:** rendering a full live results list *inside* our site needs
+the Aviasales Flights Search API, which is GATED at ≥50k MAU (D21). So on-brand embedded
+*results* are not possible yet — only the *form* can be ours.
+**Chosen (Path A):** build ONE shared, on-brand `FlightSearchForm` React component and use it
+on BOTH the home hero and /search:
+- From/To fields = real airport autocomplete via Travelpayouts' FREE Places API
+  (`https://autocomplete.travelpayouts.com/places2?term=…&locale=en&types[]=city&types[]=airport`;
+  no auth, no gating; host already allowed by CSP `*.travelpayouts.com`).
+- Depart/Return = real date picker, styled to brand (build our own or a light headless lib —
+  no heavy UI dep that fights our CSS).
+- On submit = open Aviasales results via our affiliate marker (extend the existing `/go`
+  deep-link pattern to carry origin/dest/dates). Same commission as the widget; user lands on
+  Aviasales for the actual results (acceptable — that's the booking step, and it's how polished
+  metasearch sites work).
+- **Retire the generic WL widget** (wl_id=19722) as the /search UI. Keep the WL account/marker
+  for the affiliate link. Revisit an on-brand embedded results page only once the Search API
+  ungates at 50k MAU (same trigger as D21 multi-partner /go).
+**Rejected:** Path B (branded form feeding the embedded widget for on-site results) — keeps the
+off-brand widget look at the results step, undercutting the whole point. Quick-wire (style the
+widget via its Design tab) — insufficiently premium.
+**Build ownership:** design locked here (Opus); mechanical build = a Sonnet session (D19
+segregation). New shared component + modest CSS; strict module boundary (new `components/
+flight-search-form.tsx`, not edits sprayed across pages) per D19.4.
+
 ## 2026-07-12 — D22 build complete: /search shipped, CSP opened for tpembd.com
 Steps 2–4 of D22 done (Sonnet session). `apps/web/app/search/page.tsx` added (chrome +
 noindex + the two WL divs + `next/script` loader). CSP in `next.config.ts` widened:
