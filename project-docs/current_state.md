@@ -2,12 +2,48 @@
 
 _Read this first each session; update it last. The blueprint lives in `foundation.md` — grep it, don't re-read it whole._
 
-**Last updated:** 2026-08-01 (**D30 + D31 + D36 COMMITTED + PUSHED as `441b1d0`** — bundled
+**Last updated:** 2026-08-02 (**D37 — expanded 14→50 SIN-outbound seed routes, VERIFIED IN DEV,
+NOT YET COMMITTED.** Full detail below and in decisions.md D37. Working tree has 2 uncommitted
+files (`worker/seed_routes.py`, `apps/web/lib/routes-meta.ts`) on top of whatever was already
+there from the prior session — check `git status` before assuming clean. **NEXT: commit + push,
+then re-check the 10 flagged routes (below) after a few real cron polls.**)
+
+## 🆕 D37 — expanded 14→50 SIN-outbound routes (2026-08-02, Sonnet session)
+Same-origin/same-pattern expansion (D31's style, no architecture change) — NOT D29 block B's
+bigger new-origin-hubs idea, which still needs its own Fable/Opus scoping session. Full
+rationale + route list in decisions.md D37. Seeded all 50 + ran one real poll immediately
+against prod Neon (same verification pattern as D31) specifically to test the risk flagged
+before building: would low-demand new routes repeat SIN-PER's (D32) silent-empty pattern?
+**Result: yes, partially.**
+- **1 hard error:** `SIN-REP` (Siem Reap) → HTTP 400. Likely IATA-code issue — Cambodia's new
+  Angkor International Airport uses `SAI`, `REP` may be retired for this provider. Needs
+  checking before assuming this route can ever work as coded.
+- **6 silent-empty** (0 snapshots/days, same signature as PER): `ATH`, `BOM`, `DOH`, `FRA`,
+  `NBO`, `YVR`. Not proven permanently dead off one poll (PER took 8+ days to confirm) —
+  re-check after a few cron cycles.
+- **3 too-thin-to-score:** `KHH`, `KTM`, `LIS` (1 fare_calendar day, 0 snapshots).
+- **26 wrote real data**, several strongly (PVG 60 snapshots, MLE 66, NAN 135).
+- Editorial copy for all 36 new routes uses a new generic per-region template
+  (`REGION_NOTE`/`genericDest()` in `routes-meta.ts`) rather than hand-written blurbs — flagged
+  to user before building, no objection. Original 14 routes' hand-written copy untouched.
+**Verified:** web `tsc`/`eslint` green; worker `ruff check` green; real seed (idempotent, 50/50)
++ real poll (50 attempted, 1 error, 84 snapshots + 559 calendar days across the other 49)
+against production Neon; `pnpm test` 27/27; `next build` green (68 pages, 50 SSG route paths).
+Live-checked in local dev: `/flights/sin-kul` renders full D33 data-backed copy + the new
+generic region blurb, no console errors; `/flights/sin-ath` (one of the zero-data routes)
+degrades cleanly to "NO VERDICT YET" placeholders, no console errors, no crash; `/deals` lists
+all routes sorted by price including the new ones (KUL/SGN/PVG/VTE/etc. visible near the top).
+**NOT done:** not committed/pushed (DB seed is already live on prod Neon regardless — git only
+tracks the source files); SIN-REP IATA issue not investigated; the 10 flagged routes (REP + 6
+empty + 3 thin) not re-checked after cron accrual.
+
+**Last updated (prior entry):** 2026-08-01 (**D30 + D31 + D36 COMMITTED + PUSHED as `441b1d0`** — bundled
 because all three touch `page.tsx`; working tree is now clean, nothing left uncommitted.
 **Prod `/` CONFIRMED LIVE — fabricated discounts gone, real prices showing** (see D36 below).
 D34 + D33 shipped earlier in `e8fa66a` and are
-confirmed live. D26 task 4 Render cron confirmation still pending (not checkable until tonight
-21:30 UTC). D29's 3-new-hub block B still not built, needs a Fable/Opus scoping session first
+confirmed live. **D26 task 4 Render cron STILL UNCONFIRMED — a 15:51 UTC session tried and
+found the run hadn't fired yet (score cron is 21:30 UTC); re-check next session, see that
+section.** D29's 3-new-hub block B still not built, needs a Fable/Opus scoping session first
 per D19 model segregation.)
 
 ## ✅ D34 — month-rollover verdict bug — FIXED + VERIFIED IN DEV (2026-08-01, Opus session)
@@ -219,6 +255,20 @@ the deploy landed — that happens tonight. **NEXT: after 2026-08-01 21:30 UTC**
 clean against the new code and wrote/updated rows as expected (still 0 GRAB rows is a valid
 outcome if no route has actually dropped 15%+; the point is confirming the cron *ran*, e.g.
 via Render's dashboard log or a timestamp check).
+**⏳ CHECKED TOO EARLY (2026-08-01 15:51 UTC, Opus session) — still 🟡, nothing changed.**
+A session was opened to confirm the cron, but the run hadn't happened yet: `render.yaml` has
+`dealradar-poll` at `0 21 * * *` and `dealradar-score` at `30 21 * * *`, so the first run
+against `65337b8`'s `score.py` was **still ~5h40m in the future** at check time. Queried prod
+Neon (worker's own `DATABASE_URL`) anyway — state as of 15:51 UTC:
+- `price_snapshots` max `fetched_at` = **2026-08-01 08:08–08:09 UTC**, but that is the **D31
+  manual `poll.py` run**, not a cron. The last *cron* poll is still **2026-07-31 21:00–21:01
+  UTC** (crons land in a 21:00/21:01 pair of minute-buckets as they always have).
+- `deals` table: **0 rows** — unchanged, and still not proof of anything either way.
+- 13 of 14 routes have 2026-08-01 08:08–08:09 snapshots (the manual run); the 1 missing is PER.
+**RE-CHECK after 2026-08-01 21:30 UTC** (≈ 2026-08-02 05:30 SGT — so realistically the *next*
+session, not tonight). Proof = a `price_snapshots.fetched_at` batch at **2026-08-01 21:0x UTC**
+(poll fired) plus either a `deals` write/expiry or Render's `dealradar-score` run log (score
+fired clean). 0 GRAB rows remains a valid outcome.
 **Also found, unrelated:** `SIN→PER` (Perth) hasn't polled successfully since **2026-07-24**
 — 8 days stale vs. every other route's 2026-07-31. The "NO VERDICT YET" badge is currently
 explained as "only 12-day history," but if polling has silently been failing for this one
@@ -247,6 +297,10 @@ manual run. Queried `price_snapshots`/`fare_calendar` for route_id=9 directly:
 **Consequence:** SIN-PER can't accrue the 14-day history needed for a verdict while this
 persists — it may sit at "NO VERDICT YET" indefinitely, not just until day 14.
 **DECIDED 2026-08-01 (D32): wait it out.** No code changes. Revisit later if still stale.
+**Status re-checked 2026-08-01 15:51 UTC — unchanged, still stale, no action (D32 stands):**
+last `price_snapshots` row **2026-07-24 21:01**, last `fare_calendar` row **2026-07-29 21:01**;
+PER was also the only route that wrote nothing in today's 08:08 manual poll (13/14). Exactly
+the pattern D32 described — provider cache gap, still empty.
 
 ## ✅ D26 task 4 — deal scoring/verdicts — COMMITTED + PUSHED (2026-08-01)
 The ≥14-day history gate (started 2026-07-11, usable ~2026-07-25) had passed, so this

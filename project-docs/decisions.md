@@ -1,5 +1,53 @@
 # Decisions — DealRadar (append-only)
 
+## 2026-08-02 — D37: expanded from 14 to 50 SIN-outbound seed routes
+User asked to "capture more data for future use" — first proposed 30, then raised to 50 mid-
+session. Scoped as the light version of D29's queued expansion: more SIN-outbound destinations,
+NOT D29 block B's new-origin-hubs idea (Bangkok/KL/Penang as origins), which needs its own
+Fable/Opus scoping session per D19 model segregation because it requires origin-aware pages.
+This stayed same-origin/same-pattern as D31 (seed_routes.py + routes-meta.ts, zero architecture
+change) — mechanical, fits this Sonnet session.
+- **Route selection: new countries prioritized over duplicate cities**, per the user's "unique
+  routes for each country" framing. 36 new routes added → 26 of 38 countries are single-route;
+  only Indonesia/Australia/Japan/South Korea/Philippines/Taiwan/China/India/USA get a 2nd (or
+  3rd) city, chosen where real demand clearly justifies it (e.g. USA gets LAX + JFK).
+- **Editorial copy: generic per-region template, not 36 hand-written blurbs** (flagged before
+  building, user didn't object). `routes-meta.ts` gained a `REGION_NOTE`/`genericDest()` pair —
+  8 region tags (seasia/eastasia/southasia/oceania/namerica/europe/middleeast/africa) each with
+  one seasonal-pattern sentence, interpolated with city/country/flight-hours. Deliberately makes
+  no airline/nonstop claims for routes where that isn't verifiable (several of the new long-haul
+  pairs may not fly nonstop). The 14 original routes keep their hand-written D16-era copy
+  untouched. Real per-route SEO substance still comes from D33's data-backed `route-copy.ts`,
+  unaffected by this.
+- **Seeded + polled once immediately against production Neon** (same verification pattern as
+  D31), not left for tonight's cron, specifically to test the risk flagged before building: D32
+  found Travelpayouts' calendar endpoint only serves routes with real search volume on their
+  side, so pushing into lower-demand pairs risked repeating SIN-PER's silent-empty pattern many
+  times over. **Confirmed:** of the 36 new routes, one call errored outright (`SIN-REP` → HTTP
+  400 — Siem Reap's IATA code likely moved to `SAI` when Cambodia opened the new Angkor
+  International Airport; `REP` may no longer be a valid pair for this provider, needs checking
+  before assuming it'll ever produce data), and 6 more (`ATH`, `BOM`, `DOH`, `FRA`, `NBO`, `YVR`)
+  came back with zero snapshots/fare-calendar rows on this run — same silent-empty signature as
+  PER, though one poll isn't enough to call them permanently dead (PER took 8+ days of zero rows
+  to confirm). A further 3 (`KHH`, `KTM`, `LIS`) wrote 1 calendar day but nothing that bucketed
+  into a scoreable month. The remaining 26 new routes wrote real data this run, several strongly
+  (`PVG` 60 snapshots, `MLE` 66, `NAN` 135).
+- **Net effect:** 50 routes seeded and active, but effectively ~26-29 are producing usable data
+  today; the rest (REP/ATH/BOM/DOH/FRA/NBO/YVR/KHH/KTM/LIS, 10 routes) need re-checking after a
+  few days of cron polls before trusting them either way — same "wait it out vs. drop" fork D32
+  already established for PER, just a bigger batch of candidates for it now.
+**Verified:** web `tsc --noEmit`/`eslint` green; worker `ruff check` green. Real seed run
+against prod Neon: 50/50 inserted (`ON CONFLICT DO NOTHING`, idempotent). Real poll run against
+prod Neon: 50 routes attempted, 1 error (SIN-REP), 84 snapshots + 559 fare_calendar days written
+across the other 49. `pnpm test` 27/27; `next build` green (68 pages, 50 SSG route paths).
+Live-checked in local dev: a new route (`/flights/sin-kul`) renders full data-backed copy with
+no console errors, a zero-data route (`/flights/sin-ath`) degrades cleanly to "NO VERDICT YET"
+with no crash, `/deals` lists the new routes sorted by price alongside the original 14.
+**NOT done:** not committed/pushed (data-only DB seed change is already live on prod Neon
+regardless of git state — the git changes are `seed_routes.py` + `routes-meta.ts`, still
+uncommitted this session); SIN-REP's IATA-code issue not investigated further; the 9 zero/thin
+routes not re-checked after real cron accrual.
+
 ## 2026-08-01 — D36: homepage fabricated numbers replaced with the live /deals query
 The open bug logged at the end of the D35 session: `apps/web/app/page.tsx` still carried v2
 mockup numbers — three "% below normal" GRAB badges (41/38/29%), four hot-chip prices, and a
