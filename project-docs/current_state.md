@@ -2,11 +2,12 @@
 
 _Read this first each session; update it last. The blueprint lives in `foundation.md` — grep it, don't re-read it whole._
 
-**Last updated:** 2026-08-01 (D34 — month-rollover verdict bug FIXED, built + verified in dev;
-D33 — data-backed SEO copy on all 14 /flights/[route] pages; **both still uncommitted/unpushed
-— commit them together**; D26 task 4 Render cron confirmation still pending (not checkable
-until tonight 21:30 UTC); D29's 3-new-hub block B still not built, needs a Fable/Opus scoping
-session first per D19 model segregation.)
+**Last updated:** 2026-08-01 (D34 + D33 — **COMMITTED + PUSHED (`e8fa66a`) + CONFIRMED LIVE ON
+PROD** — see updated sections below; D26 task 4 Render cron confirmation still pending (not
+checkable until tonight 21:30 UTC); D30/D31 remain uncommitted in the working tree —
+deliberately left out of the `e8fa66a` push since this session's task was scoped to D33+D34
+only, still need their own commit+push session; D29's 3-new-hub block B still not built, needs
+a Fable/Opus scoping session first per D19 model segregation.)
 
 ## ✅ D34 — month-rollover verdict bug — FIXED + VERIFIED IN DEV (2026-08-01, Opus session)
 The OPEN BUG below, closed. Full rationale in decisions.md D34. Short version: verdict month
@@ -26,9 +27,20 @@ SSG paths). Old-vs-new selection run against production Neon: **BKK and DPS reco
 (nodata → FAIR)**, 10 other routes unchanged, the 4 D31 routes + PER correctly still nodata.
 Local dev confirms `/deals` and `/flights/sin-bkk`/`-hkg`/`-lhr` render the right badges and
 the FAQ sentence quotes the same figures; no console or server errors.
-**NEXT: commit + push D33 + D34 together, then confirm on prod** — eyeball faresteal.com/deals
-(BKK/DPS should show FAIR with a month label) and one route page, and after tonight's 21:30 UTC
-`dealradar-score` cron confirm it ran clean against the new `score.py`.
+**✅ COMMITTED + PUSHED + CONFIRMED LIVE ON PROD (2026-08-01, this session):** committed as
+`e8fa66a` (D33+D34 files only — D30/D31 changes sitting in the same working tree were
+deliberately left unstaged/unpushed, out of this session's scope) and pushed to `origin/main`.
+Re-verified `tsc`/`eslint`/`pnpm test` (27/27)/`next build` (28 pages, 10 SSG paths) and worker
+`pytest` (18)/`ruff` against that exact committed subset (temporarily stashed the D30/D31 diff
+to test the real push contents) before pushing. Live on faresteal.com: `/deals` now shows BKK
+and DPS as **FAIR** (were NO VERDICT YET pre-fix) with the scored-month label (`· Aug 2026` /
+`· Sep 2026`) distinct from each card's Oct 2026 headline month; PER correctly still NO
+VERDICT (D32, unrelated data gap). `/flights/sin-bkk` renders the full D33 SEO copy (lead
+paragraph, 9-month cheapest-fare table, day-of-week FAQ) plus the D34 verdict sentence — no
+console errors on either page.
+**NEXT: after tonight's 2026-08-01 21:30 UTC `dealradar-score` cron**, confirm it ran clean
+against the new `score.py` (re-query the `deals` table or check Render's run log — same check
+D26 task 4 queued). Separately, D30/D31 still need their own commit+push session.
 
 ## ✅ D33 — data-backed SEO copy on /flights/[route] — BUILT + VERIFIED IN DEV (2026-08-01, Opus session)
 The queued "turn the price DB into per-route data pages" task. Full rationale in decisions.md
@@ -52,9 +64,10 @@ queries** — one extra column (`fetched_at`) on the existing fare_calendar sele
 `pnpm test` 21/21. Live in local dev: sin-bkk renders the full set with numbers matching a
 direct DB query, sin-fco (1 date) degrades cleanly, sin-per shows the real stale banner,
 /deals unaffected by the `money` re-export. No console errors on any page checked.
-**NEXT: commit + push, then confirm on prod** — same "verified = deployed + real run on the
-live domain" bar as D22's lesson. After deploy, eyeball one route page on faresteal.com and
-run the FAQ through Google's Rich Results Test.
+**✅ COMMITTED + PUSHED + CONFIRMED LIVE ON PROD** — see D34 above (bundled in the same
+`e8fa66a` commit; both were built together and share the `getRouteVerdicts`/`loadRoute`
+call site in `flights/[route]/page.tsx` so they weren't separable into two commits).
+**Still not done:** run the sin-bkk FAQ through Google's Rich Results Test.
 
 ## ~~🐞 OPEN BUG (found during D33)~~ → ✅ FIXED, see D34 above (2026-08-01)
 **Verdicts silently vanish at each month rollover.** `getRouteStats().cheapest` picks the

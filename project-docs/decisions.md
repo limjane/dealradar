@@ -1,5 +1,31 @@
 # Decisions — DealRadar (append-only)
 
+## 2026-08-01 — D35: D33+D34 committed/pushed as one commit; D30/D31 deliberately left out
+`git status` at session start showed FIVE decisions' worth of uncommitted work sitting in one
+working tree since D26 task 4's last commit: D30 (geo-IP origin), D31 (4 new seed routes), D33
+(SEO copy), D34 (verdict fix) — D32 was decision-only, no code. This session's task was scoped
+to "commit + push the uncommitted D33 + D34 work" specifically, not everything uncommitted.
+Checked whether D33/D34 could be cleanly separated from D30/D31 in git: yes — no shared files
+(D30/D31 touch `routes-meta.ts`, `seed_routes.py`, `geo-origin.ts`, `flight-search-form.tsx`,
+`page.tsx`, `search/page.tsx`; D33/D34 touch a disjoint set) and no import-level cross-deps
+(grepped `route-copy.ts`/`deals.ts` for D30/D31 symbols — none). D33 and D34 themselves turned
+out NOT separable from each other — `flights/[route]/page.tsx`'s `loadRoute()` interleaves
+`getRouteVerdicts` (D34) and `buildRouteCopy` (D33) in the same function, so they shipped as
+one commit `e8fa66a`, matching the state doc's existing note that verdict.ts/verdict.py "fix
+both in one commit."
+**Verification method:** staged exactly the D33+D34 files, then `git stash push -u --keep-index`
+to set aside the D30/D31 diff (tracked + untracked) so the working tree matched the commit
+contents exactly, re-ran the full gate (web tsc/eslint/pnpm test/next build, worker
+pytest/ruff) against that, then committed + pushed, then popped the stash to restore D30/D31.
+Confirms the pushed commit was actually tested standalone, not just as part of the larger
+combined working tree.
+**Live-verified:** faresteal.com/deals shows BKK/DPS recovered to FAIR (were NO VERDICT YET),
+scored-month label distinct from headline month; /flights/sin-bkk shows the full D33 SEO copy
++ D34 verdict sentence. No console errors.
+**Left undone, on purpose:** D30/D31 remain uncommitted in the working tree — out of this
+session's scope, need their own commit+push session. D26 task 4's cron re-confirmation still
+queued for after tonight's 21:30 UTC run (unrelated to this commit, just hasn't fired yet).
+
 ## 2026-08-01 — D34: Month-rollover verdict bug — score the cheapest month *with history*
 The bug D33 found and flagged: `getRouteStats().cheapest` / `db.cheapest_current_snapshot()`
 both pick a route's lowest-priced tracked month. When the rolling poll window admits a
