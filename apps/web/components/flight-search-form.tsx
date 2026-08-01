@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { DayPicker } from "react-day-picker";
+import "react-day-picker/style.css";
 
 /**
  * Shared, on-brand search form (D23) — used on both the home hero and /search, replacing
@@ -45,8 +47,6 @@ function dateToISO(d: Date): string {
 function formatPretty(iso: string): string {
   return isoToDate(iso).toLocaleDateString("en-GB", { day: "numeric", month: "short" });
 }
-
-const WEEKDAYS = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"];
 
 function AirportAutocomplete({
   label,
@@ -150,63 +150,23 @@ function Calendar({
   onSelect: (iso: string) => void;
   onClose: () => void;
 }) {
-  const start = isoToDate(selected ?? min);
-  const [viewYear, setViewYear] = useState(start.getFullYear());
-  const [viewMonth, setViewMonth] = useState(start.getMonth());
-
-  const first = new Date(viewYear, viewMonth, 1);
-  const leadingBlanks = (first.getDay() + 6) % 7; // Monday-first grid
-  const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
   const minDate = isoToDate(min);
-
-  function changeMonth(delta: number) {
-    const d = new Date(viewYear, viewMonth + delta, 1);
-    setViewYear(d.getFullYear());
-    setViewMonth(d.getMonth());
-  }
-
   return (
     <div className="cal-pop">
-      <div className="cal-head">
-        <button type="button" onClick={() => changeMonth(-1)} aria-label="Previous month">
-          ‹
-        </button>
-        <span>{new Date(viewYear, viewMonth, 1).toLocaleDateString("en-GB", { month: "long", year: "numeric" })}</span>
-        <button type="button" onClick={() => changeMonth(1)} aria-label="Next month">
-          ›
-        </button>
-      </div>
-      <div className="cal-grid cal-weekdays">
-        {WEEKDAYS.map((w) => (
-          <span key={w}>{w}</span>
-        ))}
-      </div>
-      <div className="cal-grid">
-        {Array.from({ length: leadingBlanks }).map((_, i) => (
-          <span key={`b${i}`} />
-        ))}
-        {Array.from({ length: daysInMonth }).map((_, i) => {
-          const day = i + 1;
-          const d = new Date(viewYear, viewMonth, day);
-          const iso = dateToISO(d);
-          const disabled = d < new Date(minDate.getFullYear(), minDate.getMonth(), minDate.getDate());
-          const isSelected = iso === selected;
-          return (
-            <button
-              key={iso}
-              type="button"
-              disabled={disabled}
-              className={isSelected ? "cal-day cal-day-selected" : "cal-day"}
-              onClick={() => {
-                onSelect(iso);
-                onClose();
-              }}
-            >
-              {day}
-            </button>
-          );
-        })}
-      </div>
+      <DayPicker
+        mode="single"
+        defaultMonth={isoToDate(selected ?? min)}
+        selected={selected ? isoToDate(selected) : undefined}
+        onSelect={(d) => {
+          if (!d) return;
+          onSelect(dateToISO(d));
+          onClose();
+        }}
+        disabled={{ before: minDate }}
+        weekStartsOn={1}
+        showOutsideDays
+        navLayout="around"
+      />
     </div>
   );
 }

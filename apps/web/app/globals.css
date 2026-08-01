@@ -292,65 +292,80 @@ nav.site a.pill {
   letter-spacing: 0.04em;
 }
 .cal-pop {
-  width: 260px;
+  padding: 14px 16px 16px;
+  border-radius: 18px;
+  box-shadow: var(--shadow-md);
 }
-.cal-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 4px 4px 10px;
+/* Theme react-day-picker (D25) to match the site's coral/ink palette — Aviasales-style
+   single-month, minimal-chrome layout: no borders inside the grid, one accent color for
+   the selected day, quiet gray hover. Day-cell and day-button sizes are set to the SAME
+   value (38px) — leaving them mismatched (the library defaults button to 42-44px inside a
+   38px cell) is what made the first pass look broken: circles overflowed their cells and
+   every row visually misaligned. */
+.cal-pop .rdp-root {
+  --rdp-accent-color: var(--coral);
+  --rdp-accent-background-color: rgba(255, 90, 78, 0.1);
+  --rdp-day-height: 38px;
+  --rdp-day-width: 38px;
+  --rdp-day_button-height: 38px;
+  --rdp-day_button-width: 38px;
+  --rdp-day_button-border: none;
+  --rdp-day_button-border-radius: 10px;
+  --rdp-selected-border: none;
+  --rdp-nav_button-height: 30px;
+  --rdp-nav_button-width: 30px;
+  --rdp-disabled-opacity: 1;
+  --rdp-outside-opacity: 0.4;
+  font-family: inherit;
   font-size: 13px;
-  font-weight: 700;
   color: var(--ink);
 }
-.cal-head button {
-  border: 0;
-  background: transparent;
-  color: var(--ink-soft);
-  width: 26px;
-  height: 26px;
-  border-radius: 8px;
-  font-size: 15px;
-  cursor: pointer;
-}
-.cal-head button:hover {
-  background: var(--bg);
+.cal-pop .rdp-month_caption {
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 800;
   color: var(--ink);
 }
-.cal-grid {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 2px;
-}
-.cal-weekdays {
-  margin-bottom: 2px;
+.cal-pop .rdp-weekday {
   font-size: 10px;
   font-weight: 700;
+  letter-spacing: 0.05em;
   color: var(--ink-soft);
-  text-align: center;
+  text-transform: uppercase;
+  opacity: 1;
 }
-.cal-day {
-  border: 0;
-  background: transparent;
-  color: var(--ink);
-  font: inherit;
-  font-size: 12.5px;
+.cal-pop .rdp-day_button {
   font-weight: 500;
-  padding: 7px 0;
-  border-radius: 8px;
-  cursor: pointer;
+  font-size: 13px;
+  color: var(--ink);
+  transition: background 0.12s;
 }
-.cal-day:hover:not(:disabled) {
+.cal-pop .rdp-day_button:hover:not([disabled]) {
   background: var(--bg);
 }
-.cal-day:disabled {
-  color: #ded8ec;
-  cursor: not-allowed;
+.cal-pop .rdp-selected {
+  font-weight: 700;
+  font-size: 13px;
 }
-.cal-day-selected {
+.cal-pop .rdp-selected .rdp-day_button {
   background: var(--coral);
   color: #fff;
-  font-weight: 700;
+}
+.cal-pop .rdp-disabled {
+  color: #ded8ec;
+}
+.cal-pop .rdp-button_previous,
+.cal-pop .rdp-button_next {
+  border-radius: 8px;
+  color: var(--ink-soft);
+}
+.cal-pop .rdp-button_previous:hover,
+.cal-pop .rdp-button_next:hover {
+  background: var(--bg);
+  color: var(--ink);
+}
+.cal-pop .rdp-chevron {
+  fill: var(--ink-soft);
 }
 .search-error {
   color: var(--coral);
