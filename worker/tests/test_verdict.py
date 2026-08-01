@@ -2,7 +2,8 @@
 
 from decimal import Decimal
 
-from verdict import VerdictLabel, compute_verdict, median
+from models import MonthCandidate
+from verdict import VerdictLabel, compute_verdict, median, select_verdict_month
 
 CASES = [
     # (name, current, history, span_days, expected_label)
@@ -63,3 +64,59 @@ def test_no_history_uses_current_as_baseline_and_zero_discount() -> None:
     v = compute_verdict(Decimal("312"), [], 0)
     assert v.baseline_median == Decimal("312")
     assert v.discount_pct == Decimal("0")
+
+
+# --- month selection (D34: verdicts must survive a month rollover) ---
+
+
+def _month(m: str, price: str) -> MonthCandidate:
+    return MonthCandidate(travel_month=m, price=Decimal(price), currency="SGD")
+
+
+MATURE = ([Decimal("500")] * 21, 21)
+FRESH = ([Decimal("410")], 0)  # a month that just entered the rolling window
+
+
+def test_skips_a_brand_new_cheaper_month_for_one_with_history() -> None:
+    """The actual 2026-08-01 bug: 2026-10 entered the window cheapest with 1 snapshot and
+    took the verdict off BKK/DPS/HKG even though 08/09 had 21 days of history."""
+    picked = select_verdict_month(
+        [_month("2026-10", "410"), _month("2026-08", "455"), _month("2026-09", "470")],
+        {"2026-08": MATURE, "2026-09": MATURE, "2026-10": FRESH},
+    )
+    assert picked is not None
+    assert picked.travel_month == "2026-08"  # cheapest of the two *scoreable* months
+
+
+def test_picks_cheapest_when_it_is_itself_mature() -> None:
+    picked = select_verdict_month(
+        [_month("2026-08", "410"), _month("2026-09", "470")],
+        {"2026-08": MATURE, "2026-09": MATURE},
+    )
+    assert picked is not None
+    assert picked.travel_month == "2026-08"
+
+
+def test_falls_back_to_cheapest_when_no_month_has_history() -> None:
+    """A genuinely new route still scores NO_VERDICT — it just does so honestly."""
+    picked = select_verdict_month(
+        [_month("2026-10", "410"), _month("2026-08", "455")],
+        {"2026-08": FRESH, "2026-10": FRESH},
+    )
+    assert picked is not None
+    assert picked.travel_month == "2026-10"
+    history, span = FRESH
+    assert compute_verdict(picked.price, history, span).label == VerdictLabel.NO_VERDICT
+
+
+def test_treats_a_month_missing_from_histories_as_immature() -> None:
+    picked = select_verdict_month(
+        [_month("2026-10", "410"), _month("2026-08", "455")],
+        {"2026-08": MATURE},
+    )
+    assert picked is not None
+    assert picked.travel_month == "2026-08"
+
+
+def test_no_candidates() -> None:
+    assert select_verdict_month([], {}) is None

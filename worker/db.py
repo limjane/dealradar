@@ -69,45 +69,46 @@ def insert_fare_days(days: list[FareDay]) -> int:
     return len(days)
 
 
-def cheapest_current_snapshot(route_id: int) -> MonthCandidate | None:
-    """The route's currently cheapest tracked (travel_month, price) — one row per month,
-    latest poll only, same "latest per group, then min" logic as the web read layer
-    (apps/web/lib/deals.ts) mirrors independently."""
+def month_candidates(route_id: int) -> list[MonthCandidate]:
+    """Every tracked (travel_month, price) for the route — one row per month, latest poll
+    only, same "latest per group" logic as the web read layer (apps/web/lib/deals.ts)
+    mirrors independently. Cheapest-first; which one actually gets scored is
+    verdict.select_verdict_month's call, not this query's (D34)."""
     with get_conn() as conn:
-        row = conn.execute(
+        rows = conn.execute(
             "SELECT s.travel_month, s.price, s.currency "
             "FROM price_snapshots s "
             "JOIN (SELECT travel_month, max(fetched_at) AS mx FROM price_snapshots "
             "      WHERE route_id = %(route_id)s GROUP BY travel_month) l "
             "  ON l.travel_month = s.travel_month AND l.mx = s.fetched_at "
             "WHERE s.route_id = %(route_id)s "
-            "ORDER BY s.price ASC LIMIT 1",
+            "ORDER BY s.price ASC",
             {"route_id": route_id},
-        ).fetchone()
-    if row is None:
-        return None
-    return MonthCandidate(travel_month=row[0], price=row[1], currency=row[2])
+        ).fetchall()
+    return [MonthCandidate(travel_month=r[0], price=r[1], currency=r[2]) for r in rows]
 
 
-def month_price_history(
-    route_id: int, travel_month: str, window_days: int = 60
-) -> tuple[list[Decimal], int]:
-    """That route+month's own snapshot prices within the trailing window, plus the day-span
-    between oldest and newest snapshot (used to gate "not enough history yet")."""
+def month_histories(route_id: int, window_days: int = 60) -> dict[str, tuple[list[Decimal], int]]:
+    """Per travel-month: that route+month's own snapshot prices within the trailing window,
+    plus the day-span between its oldest and newest snapshot (used to gate "not enough
+    history yet"). One query for all of the route's months."""
     with get_conn() as conn:
         rows = conn.execute(
-            "SELECT price, fetched_at FROM price_snapshots "
-            "WHERE route_id = %s AND travel_month = %s "
+            "SELECT travel_month, price, fetched_at FROM price_snapshots "
+            "WHERE route_id = %s "
             "  AND fetched_at >= now() - (%s || ' days')::interval "
-            "ORDER BY fetched_at",
-            (route_id, travel_month, window_days),
+            "ORDER BY travel_month, fetched_at",
+            (route_id, window_days),
         ).fetchall()
-    if not rows:
-        return [], 0
-    prices = [r[0] for r in rows]
-    fetched_ats: list[datetime] = [r[1] for r in rows]
-    span_days = (fetched_ats[-1] - fetched_ats[0]).days
-    return prices, span_days
+    by_month: dict[str, tuple[list[Decimal], list[datetime]]] = {}
+    for travel_month, price, fetched_at in rows:
+        prices, fetched_ats = by_month.setdefault(travel_month, ([], []))
+        prices.append(price)
+        fetched_ats.append(fetched_at)
+    return {
+        month: (prices, (fetched_ats[-1] - fetched_ats[0]).days)
+        for month, (prices, fetched_ats) in by_month.items()
+    }
 
 
 def active_deal_id(route_id: int) -> int | None:

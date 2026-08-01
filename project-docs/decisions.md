@@ -1,5 +1,251 @@
 # Decisions — DealRadar (append-only)
 
+## 2026-08-01 — D34: Month-rollover verdict bug — score the cheapest month *with history*
+The bug D33 found and flagged: `getRouteStats().cheapest` / `db.cheapest_current_snapshot()`
+both pick a route's lowest-priced tracked month. When the rolling poll window admits a
+brand-new travel month it has 1 snapshot -> 0-day span -> `computeVerdict` correctly returns
+`nodata` — and because a further-out month is often the cheapest, the whole route's verdict
+vanishes even with weeks of history on its other months. Confirmed on real prod data today:
+BKK and DPS were showing NO VERDICT YET off a single 2026-10 snapshot while 2026-08/09 each
+had 21 days of history.
+
+**Fix (one commit, both mirrors):** a new pure selector — `selectVerdictMonth` in
+`apps/web/lib/verdict.ts`, `select_verdict_month` in `worker/verdict.py` — picks the
+**cheapest month that has enough history** (>=1 row and >= `MIN_HISTORY_DAYS` span), falling
+back to the cheapest month overall only when none qualifies, so a genuinely new route still
+scores `nodata` honestly. Month choice is now a scoring decision in the pure, tested layer
+rather than an implicit consequence of a SQL `ORDER BY price LIMIT 1`.
+
+**Display (signed off by user):** the badge names the scored month **only when it differs
+from the month that page shows as its headline** — e.g. `/deals` BKK card reads "Cheapest in
+Oct 2026 · S$202" with a "👌 FAIR PRICE · Aug 2026" badge. A verdict is a claim about one
+specific fare, so where the two diverge it has to say which; where they agree the badge is
+unchanged from before. Rejected: leaving the badge unlabelled (silently describes a different
+fare than the price shown), and hiding immature months from the headline until they mature
+(hides a genuinely cheap new month's fare for two weeks — the product's whole point).
+
+**Query shape changed with it.** Web: `getVerdict(dest, month, price)` -> `getRouteVerdicts(destFilter?)`
+returning a `dest -> {travelMonth, price, verdict}` map from 2 queries; `/deals` went from 15
+queries (1 + one per route) to 2. Worker: `cheapest_current_snapshot` -> `month_candidates`
+(all months, not just the cheapest) and `month_price_history` -> `month_histories` (all of a
+route's months in one query).
+
+**Verified:** worker `pytest` 18 (was 13 — 5 new selector cases incl. the exact BKK/DPS
+scenario), `ruff check`/`format` green; web `pnpm test` 27 (new `lib/verdict.test.ts` mirrors
+the worker cases one-for-one), `tsc`/`eslint`/`next build` green (32 pages, 14 SSG paths).
+Ran the old-vs-new selection against production Neon: **BKK nodata -> fair (2026-08, S$247)
+and DPS nodata -> fair (2026-09, S$223)** recovered; the 10 other routes unchanged, including
+the 4 D31 routes and PER, which correctly stay `nodata`. Live in local dev: `/deals` shows the
+two month-labelled badges and 8 unlabelled ones, `/flights/sin-bkk` badge reads "FAIR PRICE ·
+Aug 2026" with the FAQ sentence quoting the same S$247/Aug figures, no console or server errors.
+**Not yet verified on prod** (uncommitted at time of writing) — and the Render `score` cron
+hasn't run against the new code either.
+
+## 2026-08-01 — D33: Data-backed SEO copy on /flights/[route] — gated claims, within-month day-of-week, honest freshness
+The 4 evergreen blog posts won't rank; the real SEO asset is the price DB itself (noted in
+the social-post session). Built `apps/web/lib/route-copy.ts` — pure, no DB, no `now()` — that
+turns the fare rows the route page ALREADY fetches into prose, a crawlable month table, FAQ
+copy, and the meta description. Zero new queries (one extra column on the existing
+fare_calendar select). Three judgment calls, all put to the user and signed off:
+
+**1. Every claim is sample-size gated (`COPY_GATES`).** Thin routes drop claims rather than
+publish a confident number backed by two data points — same discipline as the social-post
+guardrails. Gates: price-spread needs 8 dates; naming a cheapest/priciest month needs 3
+months that each have >= 2 dates (so one lucky date can't christen a month); midweek needs 2
+qualifying months and a >= 5% gap. Verified live: SIN–FCO (1 date) prints only "route was
+added recently" + a 1-row table + 2 FAQs, no spread, no month comparison, no lead time.
+
+**2. Midweek vs weekend is computed WITHIN each month, then averaged.** The obvious
+implementation — raw weekday vs weekend medians across the whole calendar — reports a
+SEASONAL effect as a day-of-week one, because a route's weekend dates can cluster in its
+expensive months. Measured on real data: SIN–TPE showed a fake **+32% weekend premium** that
+collapses to **+2%** once month is controlled for (and is then correctly suppressed by the 5%
+gate). Rejected alternatives: drop the claim entirely (loses a high-volume query), or ship
+the raw gap (publishes a wrong causal claim on a page whose whole pitch is honest data).
+Under the stricter method only BKK +10%, HKG +12%, NRT +13%, SYD +5% qualify today.
+
+**3. Stale routes stop claiming "updated daily".** Any route whose newest fare row is >= 3
+days old swaps the label for "last updated <date>", shows a banner, and drops the "N days
+out" lead-time sentence (a claim about *today's* board). Generic rule, so it self-heals when
+a route recovers — currently only SIN–PER (D32's provider cache gap), confirmed rendering
+live. Rejected: suppressing all generated copy on stale routes (leaves sin-per a thin page).
+
+**Also decided:** the "how far in advance should I book" FAQ was CUT — its honest answer is
+"we don't know yet", which is dead weight in a FAQPage schema. Re-add when there's
+booking-window history to answer it from.
+
+**SEO scaffolding shipped alongside:** JSON-LD `FAQPage` (verified byte-identical to the
+visible Q&As — mismatched schema gets penalised), a crawlable cheapest-fare-by-month table
+(previously every price except the headline lived only inside an SVG, so crawlers saw almost
+no numbers), live meta descriptions ("from S$202 one-way (October 2026)" instead of a static
+blurb), and H2s phrased as real search queries. Hand-written `blurb`/`tips` in
+`routes-meta.ts` are kept as secondary colour under the generated copy, not replaced.
+
+**Testing:** no test runner existed in `apps/web`. Rather than add a framework dependency for
+one module, used Node's built-in runner with native TS type-stripping — `pnpm test`, 21 tests,
+zero new deps (needed `allowImportingTsExtensions` in tsconfig). Worth revisiting if the web
+side ever needs component tests; Node's runner won't cover those.
+
+**Found but NOT fixed (out of scope, flagged as its own task):** verdicts silently vanish at
+each month rollover. `getRouteStats().cheapest` picks the lowest-priced month; when the
+worker's rolling window admits a brand-new month it has 1 snapshot -> 0-day span -> `nodata`.
+On 2026-08-01 this took verdicts off BKK, DPS and HKG (3 of 10 mature routes) even though all
+three have 21 days of usable history on other months. Same class as the bug D26 fixed once —
+that fix decoupled from fare_calendar but kept "cheapest month" as the selector. Affects
+/deals identically, and worker/score.py picks its month the same way.
+
+## 2026-08-01 — D32: SIN-PER staleness — wait it out, no code change
+Root cause (established last session, D31 section of current_state.md): Travelpayouts'
+calendar endpoint serves their own server-side cache, which "updates when users search the
+route" — SIN-PER's cache has thinned to near-nothing on their end since 2026-07-24, not a
+bug in `poll.py` (0 errors logged, `raise_for_status`/`success` checks never fired). Asked
+user: wait it out vs. drop the route. **User chose wait it out.** No code changes made.
+Consequence stands: SIN-PER can't accrue the 14-day verdict history while the provider
+cache stays empty — may sit at "NO VERDICT YET" indefinitely. Revisit only if it's still
+stale after search volume on that route would plausibly have picked back up, or if the
+user wants to drop it later (removal = `worker/seed_routes.py` + `apps/web/lib/routes-meta.ts`
++ clean up any stale `deals` row).
+
+## 2026-08-01 — D31: D28 seed routes built — SIN–CGK/DXB/CDG/FCO live
+Built the "immediate" bucket from D28: 4 new SIN-outbound routes added to
+`worker/seed_routes.py` (CGK/DXB/CDG/FCO, seed_priority 65/45/35/30 slotted by rough
+haul-length/volume, same list shape as the existing 10) and `apps/web/lib/routes-meta.ts`'s
+`DESTINATIONS` (editorial copy: blurb + seasonal tips, gradient, emoji — same pattern as the
+existing 10). No architecture change — both files are the same data-driven shape the existing
+routes use, so `/deals`, `/flights/[route]`, `/search`, and `sitemap.ts` all picked the 4 up
+for free via `ROUTE_SLUGS`/`generateStaticParams`.
+Seeded live against production Neon (`routes` table, idempotent `ON CONFLICT DO NOTHING`) —
+14 active routes total. Ran a real poll (`poll.py`) immediately after seeding so the new
+routes have data now instead of waiting for tonight's 21:00 UTC cron: 14/14 routes polled,
+0 errors, 35 snapshots + 292 fare_calendar days written.
+**Verified:** worker `pytest`/`ruff check`/`ruff format --check` green (13 tests, unchanged —
+no new worker logic, just data); web `tsc --noEmit`/`eslint`/`next build` all green (32 pages,
+up from 28; `/flights/[route]` now shows 14 SSG paths). Live in local dev (after clearing the
+recurring OneDrive `.next` corruption — see ENVIRONMENT note): all 4 new route pages
+(`/flights/sin-cgk`, `-dxb`, `-cdg`, `-fco`) render with real prices and correct editorial
+copy, no console errors; `/deals` lists all 14 routes sorted by price including the 4 new
+ones. All 4 correctly show "NO VERDICT YET" (expected — brand-new routes, no 14-day history
+yet, same gate D26 task 4 already enforces).
+
+## 2026-08-01 — D30: Geo-IP default origin built (D27 block A) — corrected which "SIN" constant, chose dynamic rendering
+Built the geo-IP default described in D27 block A, with two corrections found during
+implementation:
+**Wrong constant identified in D27/state-doc:** the hardcoded default the visitor actually
+sees is `DEFAULT_FROM` in `components/flight-search-form.tsx` (a client-component constant,
+`{code:"SIN",...}`), NOT `routes-meta.ts`'s `ORIGIN`. `ORIGIN` there drives SEO route-slug
+generation (`routeSlug`/`ROUTE_SLUGS`/`destBySlug`, e.g. `/flights/sin-bkk`) computed once at
+module/build time — making it request-dynamic would break static params. Left `ORIGIN` alone;
+fixed `DEFAULT_FROM` via a new `initialFrom` prop on `FlightSearchForm` (mirrors the existing
+`initialTo` pattern).
+**Rendering trade-off surfaced + user chose "go dynamic":** reading `next/headers` in a
+Server Component makes that route request-dynamic (opts out of static/ISR). Home (`/`) and
+`/search` both now render dynamically (confirmed in `next build` output: `ƒ` not `○`/`●`);
+`/deals` and `/flights/[route]` don't use the form and stay static, unaffected. Chosen over
+keeping both pages static with a client-side round-trip fetch, since traffic is low and the
+extra round-trip would add a visible flash-of-SIN — standard Vercel pattern for
+geo-personalization, SEO unaffected (still SSR'd/crawlable).
+**New file `lib/geo-origin.ts`:** `COUNTRY_ORIGIN` lookup table covering the countries our
+existing SIN-outbound `DESTINATIONS` serve (TH/MY/ID/PH/HK/TW/KR/JP/AU/GB) + SG itself;
+`originForCountry()` falls back to SIN for unmapped/missing country. Not tied to "hub"
+existence — the search form is worldwide/freeform since D23, so any visitor gets their own
+city as a default even though BKK/KUL/PEN aren't tracked hubs yet (that's D29 block B).
+**Verified:** `tsc --noEmit`/`eslint`/`next build` all green (28 pages). Live in local dev:
+no header → "Singapore (SIN)" (unchanged fallback behavior, no regression); `curl -H
+"x-vercel-ip-country: TH"` → "Bangkok (BKK)"; `GB` → "London (LHR)"; unmapped `ZZ` → SIN
+fallback. No console errors. Real Vercel geo-header behavior only observable on an actual
+Vercel deployment (this session verified the logic, not the live header on faresteal.com).
+
+## 2026-08-01 — D29: Regional multi-hub expansion — 3 new origin hubs researched (Bangkok, KL, Penang); Jakarta/Manila dropped
+Amends D27/D28. User asked to go further than pre-seeding SIN-outbound routes: make Bangkok,
+Kuala Lumpur, Jakarta, Manila (and, confirmed after an initial caution, Penang) their own
+tracked **origin hubs** — each getting its own destination list, the same way Singapore does
+today. This is the concrete form of D27 block B's "origin-aware pages" requirement, scoped
+across multiple cities instead of one.
+**Researched via web search** (sources in chat, not re-quoted here — grep chat history if
+needed): route-level ranking data is freely available for Bangkok (aviationa2z.com published
+a ranked top-10 with flight/seat counts, Jan 2026) but NOT for Jakarta or Manila — that
+appears to be paid OAG/Cirium territory. KL and Penang landed in between: real destinations
+confirmed, but unranked beyond the top 1–2.
+**User decision: drop Jakarta and Manila as origin hubs** rather than seed them with
+guessed/padded lists. (Jakarta and Manila remain reachable as SIN-outbound destinations
+already — SIN–CGK is in D28's immediate list — this only drops them as *their own* hub.)
+**Final hub destination lists (unranked ones ordered by mention-frequency, not confirmed
+volume — flag this if it ever surfaces in UI copy claiming "cheapest"):**
+- **Bangkok (ranked, high confidence):** KUL, SIN, HKG, TPE, ICN, PVG(Shanghai),
+  NRT/HND(Tokyo), CAN(Guangzhou), RGN(Yangon), SGN(HCMC) — 10 routes.
+- **Kuala Lumpur (unranked, medium confidence):** SIN, CGK(Jakarta), BKK, HKG, TPE,
+  ICN(Seoul), DPS(Bali), SGN(HCMC), PNH(Phnom Penh) — 9 routes. Note KUL→SIN reintroduces
+  the exact "fares too flat to ever verdict" characteristic D28 used to exclude SIN→KUL —
+  keeping it anyway since KL residents still need a Singapore option on their own hub page;
+  just don't expect GRAB verdicts on it.
+- **Penang (unranked, medium confidence):** KUL, SIN, BKK, HKG, TPE, CGK(Jakarta), SGN(HCMC),
+  CAN(Guangzhou), PVG(Shanghai), SZX(Shenzhen), XMN(Xiamen), DXB, HKT(Phuket), DOH, MAA(Chennai)
+  — 15 routes.
+**Net new routes if all 3 hubs are built: 34** (10+9+15), on top of D28's 14 SIN routes
+(10 existing + 4 new) = **48 routes total** in the fully-expanded scope. Directional schema
+means e.g. KUL→SIN is a separate row from SIN→BKK even where cities overlap — expected, not
+a bug.
+**Supersedes part of D28's "6 queued foreign-pair routes" list:** BKK-HKG is now covered by
+Bangkok's own hub list (drop the duplicate). HKG-TPE, ICN-NRT, ICN-KIX, NRT-TPE, JFK-LHR
+remain queued as lower-priority standalone additions (none of those 5 cities became hubs
+themselves) — keep them at the bottom of the backlog, not blocking.
+**Not yet checked:** Travelpayouts API quota headroom at 48 routes × 3 forward months
+(~144 monthly-price calls/day) — was "fine, free, 10 req/s" at 10 routes (D17); worth a
+quick confirm before block B's build session actually runs the poller against this list.
+**No code changed this session** — scoping/research only, same as D27/D28. Still blocked on
+block A (geo-IP + origin-aware `/deals`/`/flights/[route]`) before ANY of this is visible on
+a real page — the research is done early, but the build order in current_state.md is
+unchanged.
+
+## 2026-08-01 — D28: Pre-seed route list researched + finalized (busiest + most-searched)
+Amends D27 block B. User wanted popular routes pre-seeded rather than waiting entirely on
+the N-search flywheel. Researched two data sources (web search, sources in chat):
+**Busiest-by-volume** (OAG 2025 international rankings, cross-checked against 2 independent
+sources): top 10 = HKG-TPE, CAI-JED, KUL-SIN, ICN-NRT, ICN-KIX, CGK-SIN, DXB-RUH, BKK-HKG,
+NRT-TPE, JFK-LHR. Trimmed 3: CAI-JED + DXB-RUH skew religious/labor travel (Hajj/Umrah,
+migrant labor), not leisure deal-seeking; KUL-SIN's fares are too flat/cheap to ever clear a
+GRAB verdict threshold.
+**Most-searched-by-demand** (Google Flights 2025 top-10 Googled destinations; Delta's
+US-origin most-searched, cross-validating Dubai + Paris/London): destination-only data, no
+origin attached, so it can't become a route pair without guessing an origin — unlike the OAG
+data. Applied it instead as new SIN-outbound destinations (fits today's single-origin
+architecture, zero rework): added CDG (Paris), FCO (Rome), DXB (Dubai, appears in both
+datasets — strongest signal). Skipped the more exotic Google-list entries (Bilbao, Ibiza,
+Kraków, Málaga, etc.) — geographically odd/low-realism asks ex-Singapore.
+**Reclassification:** CGK-SIN (Jakarta) has Singapore on one side, so — despite coming from
+the OAG "foreign pair" list — it doesn't need block B's origin-aware pages at all. Moved to
+the immediate bucket.
+**Final scope:**
+- **Immediate (SIN-outbound extension — same pattern as the existing 10 seed routes, no
+  architecture change, can ship standalone or bundled with block A):** SIN–CDG, SIN–FCO,
+  SIN–DXB, SIN–CGK.
+- **Queued for block B (need geo-IP origin + origin-aware `/deals`/`/flights/[route]` before
+  these can render on any page):** HKG-TPE, ICN-NRT, ICN-KIX, BKK-HKG, NRT-TPE, JFK-LHR.
+No code changed this session — scoping/research only, same as D27.
+
+## 2026-08-01 — D27: Worldwide expansion split into two sessions; flywheel trigger = after N searches
+User asked "are you able to grab deals from not just Singapore" — this is D17/D19.1's
+worldwide-search + geo-IP-default-origin directive, not yet built. Scoped before building
+(per standing rule): confirmed via code read that the `routes` table is already
+origin-agnostic (free-text IATA pair, unique-indexed, no migration needed to add a route —
+schema.ts) and `worker/db.py:active_routes()` already just reads `WHERE active = true` — the
+poller has no hardcoded route list beyond the one-time seed script. Split into two
+building blocks, sequenced:
+**A) Geo-IP default origin (next session, small):** search form's "From" field already has
+full autocomplete + is user-editable (`flight-search-form.tsx`) — manual override already
+exists. Only fix: default it from Vercel's free `x-vercel-ip-country` header (→ hub-airport
+lookup table) instead of the hardcoded `SIN` in `routes-meta.ts`'s `ORIGIN` constant.
+**B) Flywheel — auto-track searched routes (later session, bigger):** trigger decided —
+**add a route to daily polling only after it's been searched/clicked N times** (not on first
+search), to keep the `routes` table and Travelpayouts API quota from filling with one-off
+noise. Exact N not locked yet (starting reference: ~3 in a rolling window) — finalize when
+scoping B's build. Still open for that session: (1) where the search-count gets logged (new
+table vs. reuse `search_cache`), (2) generic content template for auto-added routes (the 10
+seed routes have hand-written editorial copy per page; flywheel routes won't), (3) making
+`/deals`/`/flights/[route]` origin-aware instead of assuming `SIN` (headline copy + route
+resolution both currently hardcode it).
+**Not touched this session** — no code changed, scoping only.
+
 ## 2026-08-01 — D26: Task 4 scoring v1 — one active deal per route (schema-driven), publish only GRAB
 `deals` table (schema.ts) has `route_id` but no per-travel-month column, unlike
 `price_snapshots`/`fare_calendar`. Rather than add a migration this session (out of scope for

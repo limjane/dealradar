@@ -14,11 +14,14 @@ const TEXT: Record<Verdict["label"], (pct: number) => string> = {
   nodata: () => "NO VERDICT YET",
 };
 
-/** Buy/wait verdict badge (task 4; mockup v2 states, D8). Shared by /deals + /flights/[route]. */
-export function VerdictBadge({ verdict }: { verdict: Verdict }) {
+/** Buy/wait verdict badge (task 4; mockup v2 states, D8). Shared by /deals + /flights/[route].
+ * `monthLabel` is set only when the scored month differs from the month the page shows as its
+ * headline (D34) — the badge is a claim about one specific fare, so it has to name which. */
+export function VerdictBadge({ verdict, monthLabel }: { verdict: Verdict; monthLabel?: string }) {
   return (
     <span className={`badge ${verdict.label}`}>
       {ICON[verdict.label]} {TEXT[verdict.label](verdict.discountPct)}
+      {monthLabel ? ` · ${monthLabel}` : ""}
     </span>
   );
 }

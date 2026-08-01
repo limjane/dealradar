@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
-import { getCheapestPerRoute, getVerdict, money, type RouteDeal } from "@/lib/deals";
+import { getCheapestPerRoute, getRouteVerdicts, money, type RouteDeal, type RouteVerdict } from "@/lib/deals";
 import { defaultDateForMonth } from "@/lib/go-links";
 import { DESTINATIONS, formatMonth, ORIGIN, routeSlug } from "@/lib/routes-meta";
-import type { Verdict } from "@/lib/verdict";
 
 import { SiteFooter } from "../../components/site-footer";
 import { VerdictBadge } from "../../components/verdict-badge";
@@ -19,13 +18,10 @@ export const metadata: Metadata = {
 
 export default async function DealsPage() {
   let deals: RouteDeal[] = [];
-  let verdicts = new Map<string, Verdict>();
+  let verdicts = new Map<string, RouteVerdict>();
   try {
     deals = await getCheapestPerRoute();
-    const computed = await Promise.all(
-      deals.map((d) => getVerdict(d.destCode, d.travelMonth, d.price)),
-    );
-    verdicts = new Map(deals.map((d, i) => [d.destCode, computed[i]!]));
+    verdicts = await getRouteVerdicts();
   } catch {
     deals = [];
   }
@@ -65,6 +61,11 @@ export default async function DealsPage() {
             {deals.map((d) => {
               const meta = DESTINATIONS[d.destCode];
               if (!meta) return null;
+              const rv = verdicts.get(d.destCode);
+              // Name the month only when the verdict scored a different one than the card
+              // shows — otherwise the badge would describe a fare that isn't the price here.
+              const monthLabel =
+                rv && rv.travelMonth !== d.travelMonth ? formatMonth(rv.travelMonth) : undefined;
               return (
                 <div key={d.destCode} className="deal-card">
                   <Link
@@ -87,9 +88,9 @@ export default async function DealsPage() {
                         {ORIGIN.city} → {meta.city} ({d.destCode})
                       </div>
                       <div className="when">Cheapest in {formatMonth(d.travelMonth)}</div>
-                      {verdicts.get(d.destCode) && (
+                      {rv && (
                         <div style={{ marginTop: 6 }}>
-                          <VerdictBadge verdict={verdicts.get(d.destCode)!} />
+                          <VerdictBadge verdict={rv.verdict} monthLabel={monthLabel} />
                         </div>
                       )}
                     </div>

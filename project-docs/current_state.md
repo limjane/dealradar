@@ -2,8 +2,187 @@
 
 _Read this first each session; update it last. The blueprint lives in `foundation.md` — grep it, don't re-read it whole._
 
-**Last updated:** 2026-08-01 (D26 task 4 deal scoring committed `65337b8`, pushed to
-`origin/main`. Vercel deploying; Render worker picks it up on its next cron run.)
+**Last updated:** 2026-08-01 (D34 — month-rollover verdict bug FIXED, built + verified in dev;
+D33 — data-backed SEO copy on all 14 /flights/[route] pages; **both still uncommitted/unpushed
+— commit them together**; D26 task 4 Render cron confirmation still pending (not checkable
+until tonight 21:30 UTC); D29's 3-new-hub block B still not built, needs a Fable/Opus scoping
+session first per D19 model segregation.)
+
+## ✅ D34 — month-rollover verdict bug — FIXED + VERIFIED IN DEV (2026-08-01, Opus session)
+The OPEN BUG below, closed. Full rationale in decisions.md D34. Short version: verdict month
+selection moved out of SQL (`ORDER BY price LIMIT 1`) into a pure, tested selector —
+`selectVerdictMonth` (`apps/web/lib/verdict.ts`) / `select_verdict_month` (`worker/verdict.py`),
+deliberate mirrors — which picks the **cheapest month that has enough history**, falling back
+to cheapest overall only when no month qualifies (so new routes still say `nodata` honestly).
+- **Badge names the scored month only when it differs from the page's headline month**
+  (user signed off): `/deals` BKK reads "Cheapest in Oct 2026 · S$202" + "👌 FAIR PRICE ·
+  Aug 2026". Where they agree the badge is unchanged.
+- **Query shape:** web `getVerdict(dest, month, price)` → `getRouteVerdicts(destFilter?)`
+  (a `dest → {travelMonth, price, verdict}` map, 2 queries — `/deals` went 15 → 2); worker
+  `cheapest_current_snapshot`/`month_price_history` → `month_candidates`/`month_histories`.
+**Verified:** worker pytest 18 (was 13), ruff green; web `pnpm test` 27 (new
+`lib/verdict.test.ts` mirrors the worker cases), tsc/eslint/`next build` green (32 pages, 14
+SSG paths). Old-vs-new selection run against production Neon: **BKK and DPS recovered
+(nodata → FAIR)**, 10 other routes unchanged, the 4 D31 routes + PER correctly still nodata.
+Local dev confirms `/deals` and `/flights/sin-bkk`/`-hkg`/`-lhr` render the right badges and
+the FAQ sentence quotes the same figures; no console or server errors.
+**NEXT: commit + push D33 + D34 together, then confirm on prod** — eyeball faresteal.com/deals
+(BKK/DPS should show FAIR with a month label) and one route page, and after tonight's 21:30 UTC
+`dealradar-score` cron confirm it ran clean against the new `score.py`.
+
+## ✅ D33 — data-backed SEO copy on /flights/[route] — BUILT + VERIFIED IN DEV (2026-08-01, Opus session)
+The queued "turn the price DB into per-route data pages" task. Full rationale in decisions.md
+D33. Short version: new `apps/web/lib/route-copy.ts` (pure — no DB, no `now()`, fully
+testable) turns the fare rows the route page already fetches into a lead paragraph, a
+crawlable cheapest-fare-by-month table, FAQ copy, and the meta description. **Zero new
+queries** — one extra column (`fetched_at`) on the existing fare_calendar select.
+- **Every claim is sample-size gated** (`COPY_GATES`): thin routes silently drop claims
+  instead of publishing a number backed by two data points.
+- **Midweek vs weekend is computed within-month, then averaged** — the raw cross-calendar
+  version reports seasonality as a day-of-week effect (SIN–TPE showed a fake +32% weekend
+  premium that is really +2%). Only BKK/HKG/NRT/SYD clear the gate today.
+- **Stale routes stop saying "updated daily"** (>= 3 days old -> "last updated <date>" +
+  banner + no lead-time claim). Generic rule; currently fires only on SIN–PER (D32).
+- **SEO scaffolding:** JSON-LD `FAQPage` (verified identical to the visible Q&As), live meta
+  descriptions, H2s as real search queries. Hand-written blurb/tips kept as secondary colour.
+- **Testing:** `apps/web` had no test runner. Used Node's built-in runner + native TS
+  type-stripping — `pnpm test`, **21 tests, zero new deps** (tsconfig needed
+  `allowImportingTsExtensions`). Won't cover component tests if those are ever needed.
+**Verified:** `tsc`/`eslint` green; `next build` green (32 pages, 14 SSG route paths);
+`pnpm test` 21/21. Live in local dev: sin-bkk renders the full set with numbers matching a
+direct DB query, sin-fco (1 date) degrades cleanly, sin-per shows the real stale banner,
+/deals unaffected by the `money` re-export. No console errors on any page checked.
+**NEXT: commit + push, then confirm on prod** — same "verified = deployed + real run on the
+live domain" bar as D22's lesson. After deploy, eyeball one route page on faresteal.com and
+run the FAQ through Google's Rich Results Test.
+
+## ~~🐞 OPEN BUG (found during D33)~~ → ✅ FIXED, see D34 above (2026-08-01)
+**Verdicts silently vanish at each month rollover.** `getRouteStats().cheapest` picks the
+lowest-priced month; when the worker's rolling window admits a brand-new travel month it has
+1 snapshot -> 0-day span -> `computeVerdict` returns `nodata`. On 2026-08-01 this took the
+verdict off **BKK, DPS and HKG** (3 of the 10 mature routes) even though all three have 21
+days of usable history on other months — 2026-10 entered the window and happened to be
+cheapest. Recurs every month boundary, hitting a different subset. Affects `/deals`
+identically, and `worker/score.py` selects its month the same way (verdict.ts/verdict.py are
+deliberate mirrors — fix both in one commit). Same class as the bug D26 fixed once. Suggested
+fix + alternatives are in the spawned task and decisions.md D33.
+
+## 📣 Social post pack — WRITTEN (2026-08-01, Opus session) — no code change
+User asked for traffic/marketing content instead of the queued build task. Wrote
+`project-docs/social-posts-2026-08-01.md`: 6 verified-discount posts (TPE/MNL/LHR/NRT/ICN/SYD),
+7 price-only posts, and per-medium adaptations (Telegram, IG carousel, Reddit/HWZ, FB, X, TikTok).
+All numbers pulled live from prod Neon on 2026-08-01 — **all fares are ONE-WAY economy SGD**.
+Guardrails encoded in the file: no % claim without ≥18 snapshots for that route+month; Perth
+excluded (D32 stale data would read as +60% *above* median); re-pull before publishing.
+Strategic note for later: the 4 existing evergreen blog posts won't rank — the real SEO asset is
+turning the price DB into per-route data pages. ~~Queued as a Sonnet task below.~~ → **DONE, see
+D33 above** (built in an Opus session — the gating and day-of-week statistics turned out to be
+editorial/analytical judgment, not a mechanical port).
+**Possible small worker task:** promote the throwaway query into `worker/report.py` so the weekly
+post is one command instead of a hand-written script.
+
+## ✅ D32 — SIN-PER staleness — DECIDED: wait it out (2026-08-01, Sonnet session)
+Presented the decision flagged in D26 below (provider-side cache gap, not our bug) to the
+user: wait it out vs. drop the route. **User chose wait it out — no code changes.** Full
+rationale in decisions.md D32. Revisit later if still stale, or if user wants to drop it
+(removal = `worker/seed_routes.py` + `apps/web/lib/routes-meta.ts` + clean up any stale
+`deals` row).
+
+## ✅ D31 — 4 new SIN-outbound seed routes — BUILT + VERIFIED IN DEV (2026-08-01, Sonnet session)
+D28's "immediate" bucket, built. Full detail in decisions.md D31 — short version: added
+SIN–CGK (Jakarta), SIN–DXB (Dubai), SIN–CDG (Paris), SIN–FCO (Rome) to
+`worker/seed_routes.py` + editorial copy (blurb/tips/emoji/gradient) to
+`apps/web/lib/routes-meta.ts`'s `DESTINATIONS` — same pattern as the existing 10, no
+architecture change, so every page that reads `DESTINATIONS`/`ROUTE_SLUGS` (`/deals`,
+`/flights/[route]`, `/search`, `sitemap.ts`) picked them up automatically.
+Seeded live on production Neon (14 active routes now) and ran a real `poll.py` immediately
+after so the new routes have real price data now rather than waiting for tonight's cron:
+14/14 routes, 0 errors, 35 snapshots + 292 fare_calendar days written.
+**Verified:** worker pytest/ruff green (13 tests, unchanged); web tsc/eslint/`next build`
+green (32 pages, 14 SSG route paths). Live in local dev (after the usual OneDrive `.next`
+clear): all 4 new route pages render real prices + correct copy, no console errors; `/deals`
+shows all 14 routes sorted by price. All 4 show "NO VERDICT YET" as expected (fresh routes,
+no 14-day history — same gate as D26 task 4).
+**NEXT session options:** (a) after 2026-08-01 21:30 UTC, confirm the D26 `dealradar-score`
+cron ran clean on Render against the new deploy (see D26 task 4 section below — still
+unconfirmed, now also covers these 4 routes' eventual verdicts); (b) ~~check Render's
+`dealradar-poll` logs for why SIN→PER has been stale~~ → **DONE, see D32 above (user chose
+wait it out)**; (c) D29 block B (bigger — 3 new origin hubs, needs origin-aware pages first
+— scope in a Fable/Opus session per D19 before building in Sonnet).
+
+## ✅ D30 — geo-IP default origin — BUILT + VERIFIED IN DEV (2026-08-01, Sonnet session)
+D27 block A, built. Full detail in decisions.md D30 — short version: the real hardcoded
+default was `DEFAULT_FROM` in `components/flight-search-form.tsx` (not `routes-meta.ts`'s
+`ORIGIN`, which is fixed-SIN on purpose for SEO route-slug generation and was left alone).
+Added `initialFrom` prop to `FlightSearchForm` (mirrors `initialTo`) + new
+`apps/web/lib/geo-origin.ts` (`originForCountry()`, covers SG/TH/MY/ID/PH/HK/TW/KR/JP/AU/GB,
+falls back to SIN). Wired into `/` and `/search` via `next/headers` reading
+`x-vercel-ip-country` — user chose to accept the resulting trade-off (those two routes now
+render dynamically/`ƒ` instead of static, confirmed in `next build` output; `/deals` and
+`/flights/[route]` don't use the form and stay static).
+**Verified:** `tsc`/`eslint`/`next build` all green; local dev confirmed no-header→SIN
+(unchanged), and `curl -H "x-vercel-ip-country: TH"` → Bangkok, `GB` → London, unmapped `ZZ`
+→ SIN fallback, no console errors.
+**NOT yet verified:** the real Vercel geo header on an actual deployment (faresteal.com) —
+next time this comes up, a quick live check (different-country VPN or ask a friend abroad) or
+just trust the mechanism, since it's Vercel's documented, standard header.
+~~NEXT: 4 new SIN-outbound seed routes (D28)~~ → **DONE, see D31 above.**
+**Later session = block B (bigger, needs origin-aware pages first):** the flywheel —
+auto-add a route after **N searches** (exact N TBD, ~3 as a starting reference) — PLUS seed
+3 new origin hubs with their researched destination lists (D29):
+- Bangkok → 10 routes (ranked/high-confidence data)
+- Kuala Lumpur → 9 routes (unranked/medium-confidence)
+- Penang → 15 routes (unranked/medium-confidence)
+That's 34 net-new routes → **48 total once fully built** (14 SIN + 34 across the 3 new hubs).
+Also queued, lower priority (not covered by any hub): HKG-TPE, ICN-NRT, ICN-KIX, NRT-TPE,
+JFK-LHR. Needs its own scoping pass before build for: where search counts get logged, a
+generic content template for routes without hand-written editorial copy, making
+`/deals`/`/flights/[route]` origin-aware instead of assuming SIN, and a Travelpayouts quota
+check at 48 routes (was fine at 10 — not yet re-confirmed at this scale).
+
+## 🟡 D26 task 4 — deal scoring/verdicts — LIVE ON PROD (web), CRON UNCONFIRMED (2026-08-01)
+**Vercel/web confirmed live:** `faresteal.com/deals` and `/flights/sin-bkk` both checked in a
+real browser — no console errors, badges match the dev diagnostic exactly (9 FAIR + 1 NO
+VERDICT for Perth on /deals; sin-bkk shows FAIR PRICE with correct stats). The verdict logic
+shipped in D26 task 4 is confirmed working on the live domain.
+**Render `dealradar-score` cron NOT YET confirmed with the new code.** Queried the prod
+`deals` table directly (Neon, via worker's own `DATABASE_URL`): 0 rows — consistent with 0
+GRAB verdicts (matches dev), but NOT proof the new `score.py` has actually run, because
+`price_snapshots.fetched_at` shows the poll cron's last run was **2026-07-31 21:01 UTC**,
+which is *before* today's `65337b8` was pushed. Render hasn't fired its 21:00 UTC job since
+the deploy landed — that happens tonight. **NEXT: after 2026-08-01 21:30 UTC** (score cron,
+30 min after poll), re-query the `deals` table (or check Render's run log) to confirm it ran
+clean against the new code and wrote/updated rows as expected (still 0 GRAB rows is a valid
+outcome if no route has actually dropped 15%+; the point is confirming the cron *ran*, e.g.
+via Render's dashboard log or a timestamp check).
+**Also found, unrelated:** `SIN→PER` (Perth) hasn't polled successfully since **2026-07-24**
+— 8 days stale vs. every other route's 2026-07-31. The "NO VERDICT YET" badge is currently
+explained as "only 12-day history," but if polling has silently been failing for this one
+route for over a week, that's a bug, not a data-maturity gap. Worth a quick look at Render's
+`dealradar-poll` logs for PER-specific errors next session.
+
+**UPDATE 2026-08-01 (this session) — root-caused via direct Neon query, no Render dashboard
+access needed:** Not a code bug — `poll.py` isolates per-route failures and would log/count
+an error on exception, but SIN-PER shows **0 errors** in every run, including today's D31
+manual run. Queried `price_snapshots`/`fare_calendar` for route_id=9 directly:
+- `price_snapshots`: last row 2026-07-24 (still true today, 08-01 → now 8 days with zero
+  new rows, confirmed).
+- `fare_calendar`: kept getting rows through 2026-07-29 but **only far-future dates**
+  (2026-12-02, 2027-02-27) — none landing in the "current month + next 2" window
+  `cheapest_by_month_from_days` needs, so `price_snapshots` silently got nothing even
+  though the call "succeeded." From **2026-07-30 onward, zero fare_calendar rows too** —
+  the provider call is returning an empty/near-empty body for this route, not throwing.
+- Every other active route kept polling fine the whole time (8–9/10 routes daily through
+  July, 13/14 on today's 08-01 run — the 1 missing is PER).
+- Root cause per `providers/travelpayouts.py`'s own documented behavior: the calendar
+  endpoint serves Travelpayouts' own server-side cache, which "updates when users search
+  the route" (D10/D15). SIN-PER's cache appears to have thinned to nothing on their end —
+  a provider data-availability gap, not our bug. `raise_for_status()` /
+  `body["success"]` checks would have raised `ProviderError` on a real API failure; neither
+  fired.
+**Consequence:** SIN-PER can't accrue the 14-day history needed for a verdict while this
+persists — it may sit at "NO VERDICT YET" indefinitely, not just until day 14.
+**DECIDED 2026-08-01 (D32): wait it out.** No code changes. Revisit later if still stale.
 
 ## ✅ D26 task 4 — deal scoring/verdicts — COMMITTED + PUSHED (2026-08-01)
 The ≥14-day history gate (started 2026-07-11, usable ~2026-07-25) had passed, so this

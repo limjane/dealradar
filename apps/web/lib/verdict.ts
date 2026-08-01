@@ -41,6 +41,36 @@ export function computeVerdict(
   return { label, discountPct, baselineMedian: baseline };
 }
 
+/** One tracked travel-month of a route: its current (latest-poll) price plus that same
+ * route+month's own snapshot history. Input to `selectVerdictMonth`. */
+export type MonthHistory = {
+  travelMonth: string;
+  price: number;
+  currency: string;
+  history: number[];
+  historySpanDays: number;
+};
+
+export function hasEnoughHistory(m: MonthHistory): boolean {
+  return m.history.length > 0 && m.historySpanDays >= MIN_HISTORY_DAYS;
+}
+
+/**
+ * Which month to score for a route. The obvious rule — "cheapest month" — silently kills the
+ * verdict at every month rollover: the worker's rolling window admits a brand-new travel
+ * month with 1 snapshot (0-day span), that month is often the cheapest, and `computeVerdict`
+ * correctly returns `nodata` for it even though the route has weeks of usable history on its
+ * other months. So: cheapest month **that has enough history**, falling back to the cheapest
+ * overall only when no month qualifies (a genuinely new route, which then honestly scores
+ * `nodata`). Mirrored in worker/verdict.py::select_verdict_month — change one, change both.
+ */
+export function selectVerdictMonth(months: MonthHistory[]): MonthHistory | null {
+  if (months.length === 0) return null;
+  const mature = months.filter(hasEnoughHistory);
+  const pool = mature.length ? mature : months;
+  return pool.reduce((a, b) => (b.price < a.price ? b : a));
+}
+
 export const VERDICT_COPY: Record<VerdictLabel, string> = {
   grab: "GRAB IT",
   fair: "FAIR PRICE",

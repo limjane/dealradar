@@ -6,10 +6,13 @@ history. Kept dumb on purpose (v1); percentile/seasonal scoring is a post-launch
 once 30-60 days of real data land (see decisions.md D11-era beta-launch plan).
 """
 
+from collections.abc import Mapping, Sequence
 from decimal import Decimal
 from enum import StrEnum
 
 from pydantic import BaseModel
+
+from models import MonthCandidate
 
 MIN_HISTORY_DAYS = 14
 GRAB_THRESHOLD = Decimal("0.15")
@@ -56,3 +59,28 @@ def compute_verdict(current: Decimal, history: list[Decimal], history_span_days:
     else:
         label = VerdictLabel.FAIR
     return Verdict(label=label, discount_pct=discount_pct, baseline_median=baseline)
+
+
+def select_verdict_month(
+    candidates: Sequence[MonthCandidate],
+    histories: Mapping[str, tuple[list[Decimal], int]],
+) -> MonthCandidate | None:
+    """Which of a route's tracked months to score.
+
+    "Cheapest month" alone silently kills the verdict at every month rollover: the rolling
+    poll window admits a brand-new travel month with 1 snapshot (0-day span), that month is
+    often the cheapest, and `compute_verdict` correctly returns NO_VERDICT for it even though
+    the route has weeks of usable history on its other months. So: cheapest month **that has
+    enough history**, falling back to cheapest overall only when none qualifies (a genuinely
+    new route, which then honestly scores NO_VERDICT). Mirrored in
+    apps/web/lib/verdict.ts::selectVerdictMonth — change one, change both.
+    """
+    if not candidates:
+        return None
+    mature = [
+        c
+        for c in candidates
+        if (h := histories.get(c.travel_month)) is not None and h[0] and h[1] >= MIN_HISTORY_DAYS
+    ]
+    pool = mature or list(candidates)
+    return min(pool, key=lambda c: c.price)

@@ -751,6 +751,72 @@ nav.site a.pill {
   margin-bottom: 12px;
 }
 
+/* ---------- route page: data-backed SEO copy (month table, FAQ, staleness) ---------- */
+.doc .stale-note {
+  font-size: 13px;
+  font-weight: 600;
+  color: #8a5a00;
+  background: #fff8e6;
+  border: 1px solid #f5d98a;
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-bottom: 18px;
+}
+.month-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  overflow: hidden;
+  margin: 10px 0 4px;
+  box-shadow: var(--shadow-sm);
+  font-size: 14px;
+}
+.month-table th,
+.month-table td {
+  text-align: left;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--line);
+}
+.month-table thead th {
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  background: #faf8fd;
+}
+.month-table tbody tr:last-child th,
+.month-table tbody tr:last-child td {
+  border-bottom: none;
+}
+.month-table tbody th {
+  font-weight: 700;
+  color: var(--ink);
+}
+.month-table .price {
+  font-weight: 800;
+  color: var(--grab);
+}
+.month-table .count {
+  color: var(--ink-soft);
+  font-weight: 600;
+}
+.faq-item {
+  border-top: 1px solid var(--line);
+  padding-top: 14px;
+  margin-top: 14px;
+}
+.faq-item:first-child {
+  border-top: none;
+}
+.faq-item h3 {
+  font-size: 15px;
+  font-weight: 800;
+  margin-bottom: 4px;
+}
+
 /* ---------- blog ---------- */
 .post-card {
   display: block;

@@ -1,4 +1,8 @@
-"""Job: score each route's cheapest tracked fare vs its own history -> upsert deals.
+"""Job: score each route's cheapest *scoreable* tracked fare vs its own history -> upsert deals.
+
+Month selection is verdict.select_verdict_month (D34): the cheapest month with enough
+history, not the cheapest month outright — the latter drops the verdict every time the
+rolling poll window admits a brand-new, 1-snapshot travel month.
 
 v1 (foundation §3, task 4): one active deal per route (dumb on purpose — see verdict.py).
 Only GRAB-level verdicts (>=15% below the route+month's own 60-day median, with >=14 days
@@ -11,7 +15,7 @@ import db
 from dates import default_date_for_month
 from logging_setup import get_logger
 from models import Deal
-from verdict import VerdictLabel, compute_verdict
+from verdict import VerdictLabel, compute_verdict, select_verdict_month
 
 log = get_logger("score")
 
@@ -25,7 +29,8 @@ def run() -> None:
 
     for route in routes:
         try:
-            candidate = db.cheapest_current_snapshot(route.id)
+            histories = db.month_histories(route.id)
+            candidate = select_verdict_month(db.month_candidates(route.id), histories)
             existing_id = db.active_deal_id(route.id)
             if candidate is None:
                 if existing_id is not None:
@@ -33,7 +38,7 @@ def run() -> None:
                     expired += 1
                 continue
 
-            history, span_days = db.month_price_history(route.id, candidate.travel_month)
+            history, span_days = histories.get(candidate.travel_month, ([], 0))
             v = compute_verdict(candidate.price, history, span_days)
 
             if v.label != VerdictLabel.GRAB:
