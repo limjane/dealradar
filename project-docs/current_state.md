@@ -2,11 +2,14 @@
 
 _Read this first each session; update it last. The blueprint lives in `foundation.md` — grep it, don't re-read it whole._
 
-**Last updated:** 2026-08-02 (**D37 — expanded 14→50 SIN-outbound seed routes, VERIFIED IN DEV,
-NOT YET COMMITTED.** Full detail below and in decisions.md D37. Working tree has 2 uncommitted
-files (`worker/seed_routes.py`, `apps/web/lib/routes-meta.ts`) on top of whatever was already
-there from the prior session — check `git status` before assuming clean. **NEXT: commit + push,
-then re-check the 10 flagged routes (below) after a few real cron polls.**)
+**Last updated:** 2026-08-02 (**D37 — expanded 14→50 SIN-outbound seed routes — ✅ COMMITTED +
+PUSHED as `8387ade`.** Full detail below and in decisions.md D37. Working tree is now clean.
+All gates re-run against the exact committed contents before pushing: worker `pytest` 18/18 +
+`ruff check`/`format --check` clean; web `tsc`/`eslint` clean, `pnpm test` 27/27, `next build`
+green (68 pages, 50 SSG route paths) after clearing OneDrive-corrupted `.next`. **NEXT: re-check
+the 10 flagged routes (below) after a few real cron polls** — the seed only landed today with
+one manual poll so far; the 21:00 UTC cron needs to fire a few times before PER-style
+silent-empty routes can be told apart from genuinely-thin ones (D32 took 8+ days to confirm).
 
 ## 🆕 D37 — expanded 14→50 SIN-outbound routes (2026-08-02, Sonnet session)
 Same-origin/same-pattern expansion (D31's style, no architecture change) — NOT D29 block B's
