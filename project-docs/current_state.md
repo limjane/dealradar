@@ -2,15 +2,13 @@
 
 _Read this first each session; update it last. The blueprint lives in `foundation.md` — grep it, don't re-read it whole._
 
-**Last updated:** 2026-08-01 (**D36 homepage fabricated-discount bug FIXED + verified in dev,
-NOT yet committed/pushed — prod `/` still shows the fake numbers**; that commit now has to
-bundle D30 + D31 + D36 since they share `page.tsx` — see the D36 section directly below;
-brand promo pack written; D34 + D33 —
-**COMMITTED + PUSHED (`e8fa66a`) + CONFIRMED LIVE ON PROD** — see updated sections below; D26 task 4 Render cron confirmation still pending (not
-checkable until tonight 21:30 UTC); D30/D31 remain uncommitted in the working tree —
-deliberately left out of the `e8fa66a` push since this session's task was scoped to D33+D34
-only, still need their own commit+push session; D29's 3-new-hub block B still not built, needs
-a Fable/Opus scoping session first per D19 model segregation.)
+**Last updated:** 2026-08-01 (**D30 + D31 + D36 COMMITTED + PUSHED as `441b1d0`** — bundled
+because all three touch `page.tsx`; working tree is now clean, nothing left uncommitted.
+Prod verification of `/` (real prices, no fabricated discounts) still to eyeball once Vercel
+finishes deploying — see the D36 section below. D34 + D33 shipped earlier in `e8fa66a` and are
+confirmed live. D26 task 4 Render cron confirmation still pending (not checkable until tonight
+21:30 UTC). D29's 3-new-hub block B still not built, needs a Fable/Opus scoping session first
+per D19 model segregation.)
 
 ## ✅ D34 — month-rollover verdict bug — FIXED + VERIFIED IN DEV (2026-08-01, Opus session)
 The OPEN BUG below, closed. Full rationale in decisions.md D34. Short version: verdict month
@@ -43,7 +41,8 @@ paragraph, 9-month cheapest-fare table, day-of-week FAQ) plus the D34 verdict se
 console errors on either page.
 **NEXT: after tonight's 2026-08-01 21:30 UTC `dealradar-score` cron**, confirm it ran clean
 against the new `score.py` (re-query the `deals` table or check Render's run log — same check
-D26 task 4 queued). Separately, D30/D31 still need their own commit+push session.
+D26 task 4 queued). ~~Separately, D30/D31 still need their own commit+push session.~~ →
+**DONE — D30 + D31 + D36 pushed as `441b1d0`, see D36 below.**
 
 ## ✅ D33 — data-backed SEO copy on /flights/[route] — BUILT + VERIFIED IN DEV (2026-08-01, Opus session)
 The queued "turn the price DB into per-route data pages" task. Full rationale in decisions.md
@@ -102,11 +101,15 @@ $183 / Seoul $347 / Bangkok $202 and the showcase reads DPS $183 (FAIR · Sep 20
 (NO VERDICT) / BKK $202 (FAIR · Aug 2026) — **every figure matches the `/deals` page row-for-row**
 (checked side by side). DOM assert confirms zero `badge grab` elements and all 4 chip hrefs are
 valid SSG route paths. No console errors.
-**⚠ NOT committed/pushed** — still working-tree only, prod `/` still shows the fabricated numbers.
-**Commit consequence:** `page.tsx` now carries BOTH D30's uncommitted geo-IP change and this one,
-so D35's split-by-file trick no longer works — **D30 + D31 + D36 must go in one commit** (or be
-split hunk-by-hunk). That commit+push is the next session's task, and should happen BEFORE any
-promo from D35's packs drives traffic to `/`.
+**✅ COMMITTED + PUSHED (2026-08-01, Opus session):** `441b1d0`, bundled with D30 + D31 as
+predicted — `page.tsx` carried all three, so D35's split-by-file trick no longer worked. Every
+gate re-run against the exact staged contents (staged tree was byte-identical to the working
+tree, so nothing needed stashing): worker `pytest` 18 + `ruff check`/`format --check` clean;
+web `tsc`, `eslint`, `pnpm test` 27/27, `next build` green — 32 pages, 14 SSG paths, `/` and
+`/search` still `ƒ` dynamic as D30 intends. Pushed to `origin/main`; working tree clean.
+**NEXT: eyeball prod** once Vercel's deploy lands — `faresteal.com/` should show real prices
+matching `/deals` (no `41/38/29% below normal` badges, no strikethrough "was" prices, hot chips
+linking to `/flights/[route]`). Do this BEFORE any promo from D35's packs drives traffic to `/`.
 
 ## ~~🔴 OPEN BUG — homepage advertises fabricated discounts~~ → ✅ FIXED, see D36 above
 (found 2026-08-01, Opus session) `apps/web/app/page.tsx` carried hardcoded mockup numbers from
@@ -145,7 +148,7 @@ rationale in decisions.md D32. Revisit later if still stale, or if user wants to
 (removal = `worker/seed_routes.py` + `apps/web/lib/routes-meta.ts` + clean up any stale
 `deals` row).
 
-## ✅ D31 — 4 new SIN-outbound seed routes — BUILT + VERIFIED IN DEV (2026-08-01, Sonnet session)
+## ✅ D31 — 4 new SIN-outbound seed routes — BUILT + VERIFIED + PUSHED (`441b1d0`, 2026-08-01)
 D28's "immediate" bucket, built. Full detail in decisions.md D31 — short version: added
 SIN–CGK (Jakarta), SIN–DXB (Dubai), SIN–CDG (Paris), SIN–FCO (Rome) to
 `worker/seed_routes.py` + editorial copy (blurb/tips/emoji/gradient) to
@@ -167,7 +170,7 @@ unconfirmed, now also covers these 4 routes' eventual verdicts); (b) ~~check Ren
 wait it out)**; (c) D29 block B (bigger — 3 new origin hubs, needs origin-aware pages first
 — scope in a Fable/Opus session per D19 before building in Sonnet).
 
-## ✅ D30 — geo-IP default origin — BUILT + VERIFIED IN DEV (2026-08-01, Sonnet session)
+## ✅ D30 — geo-IP default origin — BUILT + VERIFIED + PUSHED (`441b1d0`, 2026-08-01)
 D27 block A, built. Full detail in decisions.md D30 — short version: the real hardcoded
 default was `DEFAULT_FROM` in `components/flight-search-form.tsx` (not `routes-meta.ts`'s
 `ORIGIN`, which is fixed-SIN on purpose for SEO route-slug generation and was left alone).
