@@ -2,11 +2,13 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import { getFareCalendar, getRouteStats, money, type FareDay } from "@/lib/deals";
+import { getFareCalendar, getRouteStats, getVerdict, money, type FareDay } from "@/lib/deals";
 import { destBySlug, formatMonth, ORIGIN, ROUTE_SLUGS } from "@/lib/routes-meta";
+import type { Verdict } from "@/lib/verdict";
 
 import { FareChart } from "../../../components/fare-chart";
 import { SiteFooter } from "../../../components/site-footer";
+import { VerdictBadge } from "../../../components/verdict-badge";
 
 export const revalidate = 3600; // ISR — refresh hourly
 
@@ -65,6 +67,20 @@ export default async function RoutePage({ params }: { params: Promise<{ route: s
   const med = prices.length ? median(prices) : null;
   const cheapestDay = lo !== null ? days[prices.indexOf(lo)]! : null;
 
+  // Verdict is scored off price_snapshots (the worker's canonical source, same as /deals),
+  // not the fare_calendar headline day above — fare_calendar spans further out than the
+  // 3-month rolling window price_snapshots tracks, so an oddball far-out cheap date can
+  // otherwise land on a month with too little snapshot history to score honestly.
+  let verdict: Verdict | null = null;
+  try {
+    const stats = await getRouteStats(d.code);
+    if (stats.cheapest) {
+      verdict = await getVerdict(d.code, stats.cheapest.travelMonth, stats.cheapest.price);
+    }
+  } catch {
+    verdict = null;
+  }
+
   return (
     <>
       <header className="doc-header">
@@ -80,6 +96,12 @@ export default async function RoutePage({ params }: { params: Promise<{ route: s
           {ORIGIN.city} → {d.city} {d.emoji}
         </h1>
         <p className="updated">Flight price tracker · {d.country} · updated daily</p>
+
+        {verdict && (
+          <div style={{ marginTop: 8 }}>
+            <VerdictBadge verdict={verdict} />
+          </div>
+        )}
 
         {cheapestDay && lo !== null && (
           <p
@@ -162,8 +184,8 @@ export default async function RoutePage({ params }: { params: Promise<{ route: s
 
         <p className="note">
           Prices are the cheapest one-way fares our tracker has found and may be cached or
-          delayed. Buy-or-wait verdicts based on longer price history are coming as we gather
-          more data. Always confirm the final price on the provider&apos;s site.
+          delayed. The verdict above compares today&apos;s price to this route&apos;s own
+          60-day median. Always confirm the final price on the provider&apos;s site.
         </p>
 
         <p style={{ marginTop: 24 }}>

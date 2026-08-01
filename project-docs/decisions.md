@@ -1,5 +1,38 @@
 # Decisions — DealRadar (append-only)
 
+## 2026-08-01 — D26: Task 4 scoring v1 — one active deal per route (schema-driven), publish only GRAB
+`deals` table (schema.ts) has `route_id` but no per-travel-month column, unlike
+`price_snapshots`/`fare_calendar`. Rather than add a migration this session (out of scope for
+"score against existing data"), v1 keeps **one active deal per route** — whichever tracked
+month is currently cheapest — matching foundation §3's "keep dumb, tune later" v1 posture.
+Only GRAB-level verdicts (≥15% below that route+month's own 60-day median, ≥14 days history)
+get written to `deals`; FAIR/HIGH are computed live for display but not persisted — `deals`
+stays reserved for actual bargains (feeds task 7's deals-feed page + task 8's alerts later).
+**Verdict formula lives in two places on purpose** (same pattern as poll.py/lib/deals.ts
+already independently reimplementing "latest snapshot per route+month"): `worker/verdict.py`
+is canonical + pytest-covered (foundation's must-test item); `apps/web/lib/verdict.ts` is a
+thin TS mirror so /deals can show a verdict for every route, not just the ones that clear the
+publish bar. Change the formula in one, change the other in the same commit.
+**No 48h-unrefreshed expiry in v1:** foundation says expire "on rebound >10% or after 48h
+unrefreshed," but `deals` has no last-refreshed column (only `first_seen`/`expires_at`) and
+score.py runs daily right after poll — a stale-cron scenario is an ops/liveness concern, not
+a per-row scoring one. Rebound-expiry is implemented (verdict drops below GRAB → expire);
+the 48h timer is deliberately deferred rather than bolted on with a field the schema doesn't
+have. Revisit if/when alerts (task 8) need it.
+**Bug found + fixed during verification:** the route page's headline "cheapest tracked" price
+comes from `fare_calendar` (unrestricted date range) while the verdict is scored off
+`price_snapshots` (3-month rolling window) — scoring whatever month the headline day happened
+to fall in could pick a month with too little snapshot history and show a misleading
+NO_VERDICT next to a perfectly fine FAIR-priced fare. Fixed: route-page verdict always scores
+`getRouteStats`' price_snapshots-sourced cheapest month, independent of the fare_calendar
+headline day.
+**Verified against real prod data** (not fixtures): ran `score.py` against live Neon —
+10/10 routes, 0 errors, 9 FAIR + 1 NO VERDICT (Perth, 12-day span), 0 GRAB — hand-checked
+every route's discount_pct to confirm the 0-GRAB result is correct (real fares just haven't
+dropped 15%+ yet), not a silent scoring bug. Live-checked badges on a local dev server
+(`/deals`, `/flights/sin-bkk`, `/flights/sin-per`) — content matches the CLI diagnostic
+exactly, no console errors. **NOT committed this session** — see current_state.md.
+
 ## 2026-08-01 — D25: Swap hand-rolled calendar for react-day-picker
 User called the custom calendar "broken and ugly" (round 1: autocomplete-scare turned out
 environment-specific — Chrome extension hydration mismatch / stale OneDrive `.next` cache,

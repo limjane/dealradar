@@ -1,6 +1,7 @@
 import { neon } from "@neondatabase/serverless";
 
 import { env } from "@/lib/env";
+import { computeVerdict, type Verdict } from "@/lib/verdict";
 
 /**
  * Read-side queries for the public pages. Uses the latest snapshot per (route, month)
@@ -92,6 +93,38 @@ export async function getFareCalendar(destCode: string): Promise<FareDay[]> {
     ORDER BY f.depart_date
   `) as { date: string; price: number; currency: string }[];
   return rows.map((r) => ({ departDate: r.date, price: r.price, currency: r.currency }));
+}
+
+/** That route+month's own snapshot prices over the trailing window, for the live verdict
+ * badge (task 4) — same "route+month's own history" shape worker/db.py::month_price_history
+ * reads for the worker's publish-side scoring. */
+async function monthPriceHistory(
+  destCode: string,
+  travelMonth: string,
+  windowDays = 60,
+): Promise<{ prices: number[]; spanDays: number }> {
+  const rows = (await sql`
+    SELECT s.price::float8 AS price, s.fetched_at AS fetched_at
+    FROM price_snapshots s
+    JOIN routes r ON r.id = s.route_id
+    WHERE r.destination = ${destCode} AND s.travel_month = ${travelMonth}
+      AND s.fetched_at >= now() - (${windowDays} || ' days')::interval
+    ORDER BY s.fetched_at
+  `) as { price: number; fetched_at: string }[];
+  if (rows.length === 0) return { prices: [], spanDays: 0 };
+  const prices = rows.map((r) => r.price);
+  const spanMs = new Date(rows[rows.length - 1]!.fetched_at).getTime() - new Date(rows[0]!.fetched_at).getTime();
+  return { prices, spanDays: Math.floor(spanMs / 86_400_000) };
+}
+
+/** Live buy/wait verdict for one route's currently-cheapest tracked month (task 4). */
+export async function getVerdict(
+  destCode: string,
+  travelMonth: string,
+  currentPrice: number,
+): Promise<Verdict> {
+  const { prices, spanDays } = await monthPriceHistory(destCode, travelMonth);
+  return computeVerdict(currentPrice, prices, spanDays);
 }
 
 /** "S$412" / "USD 412" */

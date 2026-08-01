@@ -35,6 +35,14 @@ class FareDay(BaseModel):
     fetched_at: datetime | None = None  # DB default
 
 
+class MonthCandidate(BaseModel):
+    """A route's cheapest currently-tracked (travel_month, price) — scoring input."""
+
+    travel_month: str  # YYYY-MM
+    price: Decimal
+    currency: str
+
+
 class PriceSnapshot(BaseModel):
     route_id: int
     travel_month: str  # YYYY-MM

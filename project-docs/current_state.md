@@ -2,8 +2,49 @@
 
 _Read this first each session; update it last. The blueprint lives in `foundation.md` — grep it, don't re-read it whole._
 
-**Last updated:** 2026-08-01 (D25 calendar swap committed, pushed, deployed, and verified
-live on faresteal.com/search.)
+**Last updated:** 2026-08-01 (D26 task 4 deal scoring built + verified against real prod
+data on a local dev server. NOT yet committed — awaiting user review/sign-off.)
+
+## 🟡 D26 task 4 — deal scoring/verdicts — BUILT + VERIFIED LOCALLY, NOT COMMITTED (2026-08-01)
+The ≥14-day history gate (started 2026-07-11, usable ~2026-07-25) had passed, so this
+session implemented foundation §3's scoring v1 (`discount_pct = (median − current) /
+median`, GRAB ≥15%, HIGH ≥15% over, ≥14d history required else "no verdict") for real.
+**Worker:** `worker/verdict.py` (pure `compute_verdict`, table-driven pytest in
+`tests/test_verdict.py`, 8 cases incl. boundaries) + `worker/score.py` rewritten from its
+scaffold no-op to actually query each route's cheapest tracked month, score it against that
+route+month's own 60-day price_snapshots history, and upsert/expire rows in the `deals`
+table. Schema has no per-route-month column on `deals` (route_id only) → v1 keeps ONE active
+deal per route (dumb on purpose, matches "keep dumb, tune later"); only GRAB-level verdicts
+get published there (FAIR/HIGH are display-only, not persisted as "deals"). db.py gained
+5 query helpers; models.py gained `MonthCandidate`. **Ran score.py against real production
+Neon data:** 10/10 routes scored, 0 errors, 9 FAIR + 1 NO VERDICT (Perth — only 12-day
+history span), 0 GRAB (honest — no route has actually dropped 15%+ yet on ~3 weeks of real
+data, confirmed by hand-checking every route's discount_pct).
+**Web:** `lib/verdict.ts` (TS mirror of the same pure formula — /deals needs a verdict for
+EVERY route, not just the ≥15% ones the worker publishes, so it reads price_snapshots
+history directly rather than the `deals` table), `components/verdict-badge.tsx` (4-state
+badge from the signed-off v2 mockup: grab/fair/high/nodata), `globals.css` gained the
+missing `--fair`/`--high`/`--nodata` vars + badge classes (only `--grab` existed before).
+Wired into `/deals` (badge per route) and `/flights/[route]` (badge replaces the old "buy/wait
+verdicts are coming" placeholder copy). **Fixed one real bug found during verification:** the
+route page's headline price comes from `fare_calendar` (unrestricted, spans further out than
+price_snapshots' 3-month rolling window) — scoring that exact day's month could hit a month
+price_snapshots barely has history for, showing a misleading NO_VERDICT even when the route's
+actual tracked month (same one /deals shows) was FAIR. Fixed by always scoring off
+`getRouteStats`' price_snapshots-sourced cheapest month, decoupled from the fare_calendar
+headline day.
+**Verified:** worker `pytest`/`ruff check`/`ruff format --check` all green (13 tests);
+web `tsc --noEmit`/`eslint`/`next build` all green (28 pages, DB-backed pages prerendered
+against real data); live-checked in a local dev server (`/deals`, `/flights/sin-bkk` now
+FAIR after the fix, `/flights/sin-per` correctly NO VERDICT YET) — no console errors, badge
+content matches the CLI diagnostic exactly.
+**NOT DONE:** nothing committed/pushed yet — 8 modified + 4 new files sitting in the working
+tree, all Task-4 scoped. Render's `dealradar-score` cron (already deployed, currently a
+no-op per its old scaffold) will start actually scoring the moment this ships — next daily
+run is 30 min after the 21:00 UTC poll. **NEXT: user reviews on their own dev server
+(`corepack pnpm@9.15.0 --dir apps/web dev`, or the `dealradar-web` launch.json config) →
+sign off → commit → push → confirm the Render cron's next run creates/updates deals
+correctly on prod** (same "verified = deployed + real run" bar as D25's lesson).
 
 ## ✅ D25 calendar swap — COMMITTED + PUSHED + LIVE ON PROD (2026-08-01)
 User eyeballed the react-day-picker swap on their own local dev server and signed off.

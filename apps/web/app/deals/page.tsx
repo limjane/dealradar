@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
-import { getCheapestPerRoute, money, type RouteDeal } from "@/lib/deals";
+import { getCheapestPerRoute, getVerdict, money, type RouteDeal } from "@/lib/deals";
 import { defaultDateForMonth } from "@/lib/go-links";
 import { DESTINATIONS, formatMonth, ORIGIN, routeSlug } from "@/lib/routes-meta";
+import type { Verdict } from "@/lib/verdict";
 
 import { SiteFooter } from "../../components/site-footer";
+import { VerdictBadge } from "../../components/verdict-badge";
 
 export const revalidate = 3600; // ISR — refresh hourly (foundation §3)
 
@@ -17,8 +19,13 @@ export const metadata: Metadata = {
 
 export default async function DealsPage() {
   let deals: RouteDeal[] = [];
+  let verdicts = new Map<string, Verdict>();
   try {
     deals = await getCheapestPerRoute();
+    const computed = await Promise.all(
+      deals.map((d) => getVerdict(d.destCode, d.travelMonth, d.price)),
+    );
+    verdicts = new Map(deals.map((d, i) => [d.destCode, computed[i]!]));
   } catch {
     deals = [];
   }
@@ -80,6 +87,11 @@ export default async function DealsPage() {
                         {ORIGIN.city} → {meta.city} ({d.destCode})
                       </div>
                       <div className="when">Cheapest in {formatMonth(d.travelMonth)}</div>
+                      {verdicts.get(d.destCode) && (
+                        <div style={{ marginTop: 6 }}>
+                          <VerdictBadge verdict={verdicts.get(d.destCode)!} />
+                        </div>
+                      )}
                     </div>
                     <div className="p">{money(d.price, d.currency)}</div>
                   </Link>

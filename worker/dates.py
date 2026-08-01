@@ -18,3 +18,9 @@ def next_travel_months(n: int, today: date | None = None) -> list[str]:
             month = 1
             year += 1
     return out
+
+
+def default_date_for_month(travel_month: str) -> str:
+    """Mid-month placeholder when only a travel month is known — mirrors
+    apps/web/lib/go-links.ts::defaultDateForMonth (deep-link params need a concrete date)."""
+    return f"{travel_month}-15"
