@@ -4,8 +4,8 @@ _Read this first each session; update it last. The blueprint lives in `foundatio
 
 **Last updated:** 2026-08-01 (**D30 + D31 + D36 COMMITTED + PUSHED as `441b1d0`** — bundled
 because all three touch `page.tsx`; working tree is now clean, nothing left uncommitted.
-Prod verification of `/` (real prices, no fabricated discounts) still to eyeball once Vercel
-finishes deploying — see the D36 section below. D34 + D33 shipped earlier in `e8fa66a` and are
+**Prod `/` CONFIRMED LIVE — fabricated discounts gone, real prices showing** (see D36 below).
+D34 + D33 shipped earlier in `e8fa66a` and are
 confirmed live. D26 task 4 Render cron confirmation still pending (not checkable until tonight
 21:30 UTC). D29's 3-new-hub block B still not built, needs a Fable/Opus scoping session first
 per D19 model segregation.)
@@ -107,9 +107,13 @@ gate re-run against the exact staged contents (staged tree was byte-identical to
 tree, so nothing needed stashing): worker `pytest` 18 + `ruff check`/`format --check` clean;
 web `tsc`, `eslint`, `pnpm test` 27/27, `next build` green — 32 pages, 14 SSG paths, `/` and
 `/search` still `ƒ` dynamic as D30 intends. Pushed to `origin/main`; working tree clean.
-**NEXT: eyeball prod** once Vercel's deploy lands — `faresteal.com/` should show real prices
-matching `/deals` (no `41/38/29% below normal` badges, no strikethrough "was" prices, hot chips
-linking to `/flights/[route]`). Do this BEFORE any promo from D35's packs drives traffic to `/`.
+**✅ CONFIRMED LIVE ON PROD (2026-08-01, same session):** ONE fetch of `https://www.faresteal.com/`
+(HTTP 200, no bot challenge — deliberately not polled twice per the standing rule; the response
+was saved locally and re-grepped instead). Zero `41%/38%/29% below normal` strings, zero
+strikethrough/"was" prices, zero `badge grab`. Trustbar reads "tracked daily since 11 July 2026".
+Hot chips read S$447 / S$183 / S$347 / S$202 and link to `/flights/sin-nrt|-dps|-icn|-bkk`;
+showcase shows 2 FAIR + 1 NO VERDICT (`/flights/sin-cgk` present — a D31 route) — every figure
+matches the dev-verified set row-for-row. Safe now for D35's promo packs to drive traffic to `/`.
 
 ## ~~🔴 OPEN BUG — homepage advertises fabricated discounts~~ → ✅ FIXED, see D36 above
 (found 2026-08-01, Opus session) `apps/web/app/page.tsx` carried hardcoded mockup numbers from
