@@ -7,8 +7,10 @@
 
 import type { Metadata } from "next";
 import Link from "next/link";
+import { headers } from "next/headers";
 
 import { DESTINATIONS } from "@/lib/routes-meta";
+import { originForCountry } from "@/lib/geo-origin";
 
 import { FlightSearchForm } from "../../components/flight-search-form";
 import { SiteFooter } from "../../components/site-footer";
@@ -30,6 +32,7 @@ export default async function SearchPage({
   const code = to?.toUpperCase() ?? "";
   const meta = /^[A-Z]{3}$/.test(code) ? DESTINATIONS[code] : undefined;
   const initialTo = meta ? { code: meta.code, label: `${meta.city} (${meta.code})` } : null;
+  const initialFrom = originForCountry((await headers()).get("x-vercel-ip-country"));
 
   return (
     <>
@@ -48,7 +51,7 @@ export default async function SearchPage({
         </p>
 
         <div style={{ marginTop: 24 }}>
-          <FlightSearchForm variant="page" initialTo={initialTo} />
+          <FlightSearchForm variant="page" initialTo={initialTo} initialFrom={initialFrom} />
         </div>
       </main>
 

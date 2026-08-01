@@ -2,8 +2,11 @@
 
 _Read this first each session; update it last. The blueprint lives in `foundation.md` — grep it, don't re-read it whole._
 
-**Last updated:** 2026-08-01 (D34 + D33 — **COMMITTED + PUSHED (`e8fa66a`) + CONFIRMED LIVE ON
-PROD** — see updated sections below; D26 task 4 Render cron confirmation still pending (not
+**Last updated:** 2026-08-01 (**D36 homepage fabricated-discount bug FIXED + verified in dev,
+NOT yet committed/pushed — prod `/` still shows the fake numbers**; that commit now has to
+bundle D30 + D31 + D36 since they share `page.tsx` — see the D36 section directly below;
+brand promo pack written; D34 + D33 —
+**COMMITTED + PUSHED (`e8fa66a`) + CONFIRMED LIVE ON PROD** — see updated sections below; D26 task 4 Render cron confirmation still pending (not
 checkable until tonight 21:30 UTC); D30/D31 remain uncommitted in the working tree —
 deliberately left out of the `e8fa66a` push since this session's task was scoped to D33+D34
 only, still need their own commit+push session; D29's 3-new-hub block B still not built, needs
@@ -79,6 +82,47 @@ cheapest. Recurs every month boundary, hitting a different subset. Affects `/dea
 identically, and `worker/score.py` selects its month the same way (verdict.ts/verdict.py are
 deliberate mirrors — fix both in one commit). Same class as the bug D26 fixed once. Suggested
 fix + alternatives are in the spawned task and decisions.md D33.
+
+## ✅ D36 — homepage fabricated discounts — FIXED + VERIFIED IN DEV (2026-08-01, Opus session)
+The 🔴 open bug below, closed. Full rationale in decisions.md D36. Short version:
+`apps/web/app/page.tsx` now reads the same `getCheapestPerRoute()` + `getRouteVerdicts()` pair
+`/deals` uses (same try/catch → "gathering fares" fallback), so the two pages cannot disagree.
+- **Showcase:** 3 cheapest tracked routes, real `<VerdictBadge>` (with the D34 scored-month label
+  when it differs), no badge when a route has no verdict. The fabricated `41/38/29% below normal`
+  GRAB badges and the strikethrough "was" prices are gone — we never tracked a was-price.
+- **Hot chips:** NRT/DPS/ICN/BKK with live prices, topped up from the cheapest list if one has no
+  data; now link to `/flights/[route]` instead of the `#deals` anchor (which holds only 3 cards).
+- **"60 days" fixed in all THREE places,** not just the trustbar as scoped — the same claim was
+  also in how-it-works step 2 and the showcase subheading. Trustbar reads "Real prices tracked
+  daily since 11 July 2026" (`TRACKING_SINCE` const); step 2 reads "every fare we've tracked on
+  that route"; subheading matches `/deals`' wording.
+**Verified:** `tsc`/`eslint` green, `pnpm test` 27/27, `next build` green (32 pages, 14 SSG paths,
+`/` still `ƒ` dynamic as D30 made it). Live in local dev: homepage chips read Tokyo $447 / Bali
+$183 / Seoul $347 / Bangkok $202 and the showcase reads DPS $183 (FAIR · Sep 2026) / CGK $184
+(NO VERDICT) / BKK $202 (FAIR · Aug 2026) — **every figure matches the `/deals` page row-for-row**
+(checked side by side). DOM assert confirms zero `badge grab` elements and all 4 chip hrefs are
+valid SSG route paths. No console errors.
+**⚠ NOT committed/pushed** — still working-tree only, prod `/` still shows the fabricated numbers.
+**Commit consequence:** `page.tsx` now carries BOTH D30's uncommitted geo-IP change and this one,
+so D35's split-by-file trick no longer works — **D30 + D31 + D36 must go in one commit** (or be
+split hunk-by-hunk). That commit+push is the next session's task, and should happen BEFORE any
+promo from D35's packs drives traffic to `/`.
+
+## ~~🔴 OPEN BUG — homepage advertises fabricated discounts~~ → ✅ FIXED, see D36 above
+(found 2026-08-01, Opus session) `apps/web/app/page.tsx` carried hardcoded mockup numbers from
+the v2 design, never swapped for live data — 3 showcase cards claiming `41%`/`38%`/`29%` below
+normal (no route has ever hit 15%+; the worker has produced 0 GRAB verdicts against real data),
+hot chips reading `$312/$168/$385/$142` against a real `$447/$183/$310/$202` (Bangkok understated
+by 42%), and a "60 days of real price tracking" trustbar when tracking started 2026-07-11.
+
+## 📣 Brand promo pack — WRITTEN (2026-08-01, Opus session) — no code change
+User asked for promo copy about the website (distinct from the fare-deal pack below). Wrote
+`project-docs/promo-2026-08-01.md`: positioning + Telegram (2 versions), IG carousel + caption,
+FB group post, X single + 4-post thread, and a bio/one-liner bank. **Contains no fare numbers on
+purpose** — evergreen, nothing to re-pull before publishing (unlike the deal pack). Positioning
+locked as: *the hard part isn't finding a fare, it's knowing whether to book it* — lead with the
+verdict, never the price, and publish the "wait" verdicts because they're what make the "grab"
+verdicts believable. File's closing section carries the homepage-bug warning above.
 
 ## 📣 Social post pack — WRITTEN (2026-08-01, Opus session) — no code change
 User asked for traffic/marketing content instead of the queued build task. Wrote

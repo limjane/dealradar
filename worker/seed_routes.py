@@ -22,6 +22,10 @@ SEED_ROUTES: list[tuple[str, str, int]] = [
     ("SIN", "SYD", 60),
     ("SIN", "PER", 55),
     ("SIN", "LHR", 40),
+    ("SIN", "CGK", 65),
+    ("SIN", "DXB", 45),
+    ("SIN", "CDG", 35),
+    ("SIN", "FCO", 30),
 ]
 
 

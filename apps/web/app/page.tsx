@@ -3,15 +3,38 @@
  * (project-docs/mockups/v2-fun-travel.html, D7/D8) plus how-it-works, a deals
  * showcase, and a footer with the affiliate-commission disclosure.
  *
- * Search is presentational for now — live search + real deals land in tasks 4/5.
  * Animated SVG (mascot, sky) is injected raw to keep the signed-off SMIL intact;
- * everything else is plain JSX. Static render → ISR/SEO-friendly.
+ * everything else is plain JSX. Renders dynamically (per-request, not ISR) since D27
+ * block A reads the geo-IP header for the search form's default origin.
  */
 
 import Link from "next/link";
+import { headers } from "next/headers";
 
+import {
+  getCheapestPerRoute,
+  getRouteVerdicts,
+  money,
+  type RouteDeal,
+  type RouteVerdict,
+} from "@/lib/deals";
+import { DESTINATIONS, formatMonth, ORIGIN, routeSlug } from "@/lib/routes-meta";
+
+import { originForCountry } from "../lib/geo-origin";
 import { FlightSearchForm } from "../components/flight-search-form";
 import { SiteFooter } from "../components/site-footer";
+import { VerdictBadge } from "../components/verdict-badge";
+
+/** Daily polling started 2026-07-11 (see project-docs/current_state.md, task 3). Stated as a
+ * date rather than a day/month count so the claim ages upward instead of going stale — the
+ * hardcoded "60 days" it replaced was wrong on day 1 and wrong again later. */
+const TRACKING_SINCE = "11 July 2026";
+
+/** Recognisable names for the hero chips, in display order. Only rendered if the route has a
+ * live price; the list is topped up from the cheapest routes if any of these have no data. */
+const CHIP_PREFERENCE = ["NRT", "DPS", "ICN", "BKK"];
+const CHIP_COUNT = 4;
+const SHOWCASE_COUNT = 3;
 
 // Reusable animated symbols: "fire" flame + "Radar" mascot base rig (wing/tail flap SMIL).
 const SYMBOLS = `
@@ -80,7 +103,27 @@ function Flame({ size = 14 }: { size?: number }) {
   );
 }
 
-export default function Home() {
+export default async function Home() {
+  const initialFrom = originForCountry((await headers()).get("x-vercel-ip-country"));
+
+  // Same live source /deals reads — the showcase and chips used to carry v2 mockup numbers.
+  let deals: RouteDeal[] = [];
+  let verdicts = new Map<string, RouteVerdict>();
+  try {
+    deals = await getCheapestPerRoute();
+    verdicts = await getRouteVerdicts();
+  } catch {
+    deals = [];
+  }
+  const byDest = new Map(deals.map((d) => [d.destCode, d]));
+  const showcase = deals.filter((d) => DESTINATIONS[d.destCode]).slice(0, SHOWCASE_COUNT);
+  const chips = [
+    ...CHIP_PREFERENCE.map((code) => byDest.get(code)).filter((d) => d !== undefined),
+    ...deals.filter((d) => !CHIP_PREFERENCE.includes(d.destCode)),
+  ]
+    .filter((d) => DESTINATIONS[d.destCode])
+    .slice(0, CHIP_COUNT);
+
   return (
     <>
       <svg
@@ -131,17 +174,23 @@ export default function Home() {
               We track fares every day, so you know a good price when you see one.
             </p>
 
-            <FlightSearchForm variant="hero" />
+            <FlightSearchForm variant="hero" initialFrom={initialFrom} />
 
-            <div className="hot-chips">
-              <a href="#deals">🗼 Tokyo <b>fr S$312</b></a>
-              <a href="#deals">🏝️ Bali <b>fr S$168</b></a>
-              <a href="#deals">🇰🇷 Seoul <b>fr S$385</b></a>
-              <a href="#deals">🌆 Bangkok <b>fr S$142</b></a>
-            </div>
+            {chips.length > 0 && (
+              <div className="hot-chips">
+                {chips.map((d) => {
+                  const meta = DESTINATIONS[d.destCode]!;
+                  return (
+                    <Link key={d.destCode} href={`/flights/${routeSlug(d.destCode)}`}>
+                      {meta.emoji} {meta.city} <b>fr {money(d.price, d.currency)}</b>
+                    </Link>
+                  );
+                })}
+              </div>
+            )}
 
             <div className="trustbar">
-              <span>📈 60 days of real price tracking</span>
+              <span>📈 Real prices tracked daily since {TRACKING_SINCE}</span>
               <span>🤝 Commission, never a markup</span>
               <span>⚡ Verdict in one search</span>
             </div>
@@ -165,8 +214,8 @@ export default function Home() {
               <div className="ico">📊</div>
               <h3>2 · See the verdict</h3>
               <p>
-                We check today&apos;s price against 60 days of tracked history and tell you plainly:
-                grab it, fair, or wait.
+                We check today&apos;s price against every fare we&apos;ve tracked on that route and
+                tell you plainly: grab it, fair, or wait.
               </p>
             </div>
             <div className="step">
@@ -186,67 +235,50 @@ export default function Home() {
             <h2>
               Deals from Singapore <Flame size={20} />
             </h2>
-            <p className="sub">Fresh fares, checked against 60 days of history.</p>
+            <p className="sub">
+              Live from our daily fare tracking · cheapest one-way, from
+            </p>
 
-            <Link
-              href="/flights/sin-dps"
-              className="deal-card"
-              style={{ textDecoration: "none", color: "inherit" }}
-            >
-              <div className="dest" style={{ background: "linear-gradient(135deg,#34d399,#0ea5e9)" }}>
-                🏝️
-              </div>
-              <div style={{ flex: 1 }}>
-                <span className="badge grab">
-                  <Flame /> 41% below normal
-                </span>
-                <div className="route">SIN → Bali (DPS)</div>
-                <div className="when">Nov travel · direct</div>
-              </div>
-              <div className="p">
-                S$168<small>S$285</small>
-              </div>
-            </Link>
-
-            <Link
-              href="/flights/sin-nrt"
-              className="deal-card"
-              style={{ textDecoration: "none", color: "inherit" }}
-            >
-              <div className="dest" style={{ background: "linear-gradient(135deg,#f472b6,#8b5cf6)" }}>
-                🗼
-              </div>
-              <div style={{ flex: 1 }}>
-                <span className="badge grab">
-                  <Flame /> 38% below normal
-                </span>
-                <div className="route">SIN → Tokyo (NRT)</div>
-                <div className="when">Sep travel · direct</div>
-              </div>
-              <div className="p">
-                S$312<small>S$505</small>
-              </div>
-            </Link>
-
-            <Link
-              href="/flights/sin-icn"
-              className="deal-card"
-              style={{ textDecoration: "none", color: "inherit" }}
-            >
-              <div className="dest" style={{ background: "linear-gradient(135deg,#fb923c,#f43f5e)" }}>
-                🌸
-              </div>
-              <div style={{ flex: 1 }}>
-                <span className="badge grab">
-                  <Flame /> 29% below normal
-                </span>
-                <div className="route">SIN → Seoul (ICN)</div>
-                <div className="when">Oct travel · 1 stop</div>
-              </div>
-              <div className="p">
-                S$385<small>S$540</small>
-              </div>
-            </Link>
+            {showcase.length === 0 ? (
+              <p
+                style={{
+                  textAlign: "center",
+                  marginTop: 28,
+                  fontWeight: 600,
+                  color: "var(--ink-soft)",
+                }}
+              >
+                We&apos;re gathering fares — check back shortly.
+              </p>
+            ) : (
+              showcase.map((d) => {
+                const meta = DESTINATIONS[d.destCode]!;
+                const rv = verdicts.get(d.destCode);
+                // Name the scored month only when it isn't the month this card prices (D34).
+                const monthLabel =
+                  rv && rv.travelMonth !== d.travelMonth ? formatMonth(rv.travelMonth) : undefined;
+                return (
+                  <Link
+                    key={d.destCode}
+                    href={`/flights/${routeSlug(d.destCode)}`}
+                    className="deal-card"
+                    style={{ textDecoration: "none", color: "inherit" }}
+                  >
+                    <div className="dest" style={{ background: meta.grad }}>
+                      {meta.emoji}
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      {rv && <VerdictBadge verdict={rv.verdict} monthLabel={monthLabel} />}
+                      <div className="route">
+                        {ORIGIN.code} → {meta.city} ({d.destCode})
+                      </div>
+                      <div className="when">Cheapest in {formatMonth(d.travelMonth)}</div>
+                    </div>
+                    <div className="p">{money(d.price, d.currency)}</div>
+                  </Link>
+                );
+              })
+            )}
 
             <div style={{ textAlign: "center", marginTop: 28 }}>
               <Link

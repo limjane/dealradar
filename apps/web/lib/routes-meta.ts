@@ -116,6 +116,46 @@ export const DESTINATIONS: Record<string, DestMeta> = {
       "Singapore to London (Heathrow) is a ~13h30m long-haul route. Prices are the highest on our list and vary a lot, so tracking pays off most here.",
     tips: "The cheapest fares usually appear in the low season (Jan–Mar and Nov, excluding the festive peak). Summer and December holidays are the most expensive.",
   },
+  CGK: {
+    code: "CGK",
+    city: "Jakarta",
+    country: "Indonesia",
+    emoji: "🏙️",
+    grad: "linear-gradient(135deg,#f97316,#ef4444)",
+    blurb:
+      "Singapore to Jakarta is one of the busiest short-haul routes in Southeast Asia, under 2 hours direct. Heavy competition between full-service and budget carriers keeps fares low and frequently on sale.",
+    tips: "Fares are fairly flat year-round given how competitive the route is, but dip further outside Indonesian public holidays (Idul Fitri, Christmas–New Year). Weekday flights are usually the cheapest.",
+  },
+  DXB: {
+    code: "DXB",
+    city: "Dubai",
+    country: "United Arab Emirates",
+    emoji: "🏜️",
+    grad: "linear-gradient(135deg,#d97706,#7c3aed)",
+    blurb:
+      "Singapore to Dubai is a ~7h30m route and a major hub connection, with strong leisure and stopover demand year-round.",
+    tips: "Shoulder months (Feb–Mar, Oct–Nov) tend to be cheaper, avoiding both the summer heat lull and the Nov–Jan peak. Watch for stopover fare promos via Dubai-based carriers.",
+  },
+  CDG: {
+    code: "CDG",
+    city: "Paris",
+    country: "France",
+    emoji: "🗼",
+    grad: "linear-gradient(135deg,#1e3a8a,#dc2626)",
+    blurb:
+      "Singapore to Paris (Charles de Gaulle) is a ~13h30m long-haul route and consistently one of the most-searched European destinations from Singapore.",
+    tips: "Cheapest fares typically appear Jan–Mar and Nov, outside European summer (Jun–Aug) and Christmas–New Year peaks. Booking well ahead helps on this popular route.",
+  },
+  FCO: {
+    code: "FCO",
+    city: "Rome",
+    country: "Italy",
+    emoji: "🏛️",
+    grad: "linear-gradient(135deg,#166534,#f59e0b)",
+    blurb:
+      "Singapore to Rome (Fiumicino) is a ~13h40m long-haul route, popular for its combination of history, food, and onward access to the rest of Italy.",
+    tips: "Low season (Jan–Mar, Nov) usually brings the best fares. Avoid the Jun–Aug Italian summer peak and major Catholic holiday periods when prices climb.",
+  },
 };
 
 const MONTHS = [

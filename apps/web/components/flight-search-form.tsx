@@ -22,7 +22,7 @@ type Place = {
   type: string;
 };
 
-type Airport = { code: string; label: string };
+export type Airport = { code: string; label: string };
 
 const DEFAULT_FROM: Airport = { code: "SIN", label: "Singapore (SIN)" };
 
@@ -226,14 +226,17 @@ function DateField({
 export function FlightSearchForm({
   variant = "hero",
   initialTo = null,
+  initialFrom = DEFAULT_FROM,
 }: {
   variant?: "hero" | "page";
   /** Pre-fill the destination (e.g. /search?to=DPS from a route page) so the form carries
    * the user's context instead of starting blank. */
   initialTo?: Airport | null;
+  /** Geo-IP-derived default origin (see lib/geo-origin.ts); still fully user-editable. */
+  initialFrom?: Airport;
 }) {
   const router = useRouter();
-  const [from, setFrom] = useState<Airport>(DEFAULT_FROM);
+  const [from, setFrom] = useState<Airport>(initialFrom);
   const [to, setTo] = useState<Airport | null>(initialTo);
   const [depart, setDepart] = useState<string | null>(null);
   const [ret, setRet] = useState<string | null>(null);

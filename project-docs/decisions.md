@@ -1,5 +1,38 @@
 # Decisions — DealRadar (append-only)
 
+## 2026-08-01 — D36: homepage fabricated numbers replaced with the live /deals query
+The open bug logged at the end of the D35 session: `apps/web/app/page.tsx` still carried v2
+mockup numbers — three "% below normal" GRAB badges (41/38/29%), four hot-chip prices, and a
+"60 days of real price tracking" claim — none of which came from the database. This directly
+contradicts the product's positioning ("we don't invent discount numbers") and would have been
+the first thing a visitor saw the moment the D35 promo pack drove traffic. Fixed:
+- **One data source, not two.** The homepage now calls the same `getCheapestPerRoute()` +
+  `getRouteVerdicts()` pair `/deals` uses, with the same try/catch → empty fallback, so the two
+  pages can't disagree. Showcase = the 3 cheapest tracked routes (same ordering as `/deals`, so
+  it reads as the head of that list), chips = 4 recognisable cities (NRT/DPS/ICN/BKK) filtered
+  to those with live prices and topped up from the cheapest list if any are missing. Considered
+  showing "best deals" (highest discount) instead of cheapest — rejected: there are still zero
+  GRAB verdicts against real data, so a "best deals" showcase would either be empty or re-invent
+  the ranking the bug was about.
+- **Real badges, or none.** The fabricated `badge grab` spans are gone; the showcase renders
+  `<VerdictBadge>` off the live verdict (including the D34 scored-month label when it differs
+  from the card's month), and renders no badge at all when a route has no verdict. The
+  strikethrough "was" prices (`S$285` etc.) are deleted outright — we have never tracked a
+  was-price, so there is nothing to render there honestly.
+- **Chips link to route pages, not `#deals`.** They used to anchor to the showcase, which now
+  holds only 3 cards that may not include the chip's city.
+- **"60 days" → a since-date, and fixed in all three places.** The stated ask was the trustbar,
+  but the same false claim appeared in how-it-works step 2 and the showcase subheading; fixing
+  one and leaving two would have left the page contradicting itself. Trustbar now reads "Real
+  prices tracked daily since 11 July 2026" (`TRACKING_SINCE` const). Chose a since-date over a
+  computed day count deliberately: "60 days" was wrong low on day 1 and would have gone wrong
+  high later, whereas a start date is true forever and ages upward on its own. Note the 60-day
+  figure was not pure invention — `deals.ts::monthHistories` really does use a 60-day window —
+  it was just describing the query's window rather than the data actually in it.
+**Commit consequence:** `page.tsx` now carries BOTH D30's uncommitted `initialFrom` geo-IP
+change and this one. The D35 trick of splitting commits by file no longer works for this file —
+D30/D31 and D36 have to go in one commit, or be split hunk-by-hunk.
+
 ## 2026-08-01 — D35: D33+D34 committed/pushed as one commit; D30/D31 deliberately left out
 `git status` at session start showed FIVE decisions' worth of uncommitted work sitting in one
 working tree since D26 task 4's last commit: D30 (geo-IP origin), D31 (4 new seed routes), D33
