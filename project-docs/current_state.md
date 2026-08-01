@@ -2,10 +2,10 @@
 
 _Read this first each session; update it last. The blueprint lives in `foundation.md` — grep it, don't re-read it whole._
 
-**Last updated:** 2026-08-01 (D26 task 4 deal scoring built + verified against real prod
-data on a local dev server. NOT yet committed — awaiting user review/sign-off.)
+**Last updated:** 2026-08-01 (D26 task 4 deal scoring committed `65337b8`, pushed to
+`origin/main`. Vercel deploying; Render worker picks it up on its next cron run.)
 
-## 🟡 D26 task 4 — deal scoring/verdicts — BUILT + VERIFIED LOCALLY, NOT COMMITTED (2026-08-01)
+## ✅ D26 task 4 — deal scoring/verdicts — COMMITTED + PUSHED (2026-08-01)
 The ≥14-day history gate (started 2026-07-11, usable ~2026-07-25) had passed, so this
 session implemented foundation §3's scoring v1 (`discount_pct = (median − current) /
 median`, GRAB ≥15%, HIGH ≥15% over, ≥14d history required else "no verdict") for real.
@@ -38,13 +38,12 @@ web `tsc --noEmit`/`eslint`/`next build` all green (28 pages, DB-backed pages pr
 against real data); live-checked in a local dev server (`/deals`, `/flights/sin-bkk` now
 FAIR after the fix, `/flights/sin-per` correctly NO VERDICT YET) — no console errors, badge
 content matches the CLI diagnostic exactly.
-**NOT DONE:** nothing committed/pushed yet — 8 modified + 4 new files sitting in the working
-tree, all Task-4 scoped. Render's `dealradar-score` cron (already deployed, currently a
-no-op per its old scaffold) will start actually scoring the moment this ships — next daily
-run is 30 min after the 21:00 UTC poll. **NEXT: user reviews on their own dev server
-(`corepack pnpm@9.15.0 --dir apps/web dev`, or the `dealradar-web` launch.json config) →
-sign off → commit → push → confirm the Render cron's next run creates/updates deals
-correctly on prod** (same "verified = deployed + real run" bar as D25's lesson).
+**NEXT: confirm live on prod** — once Vercel finishes deploying, eyeball faresteal.com/deals
+and a /flights/[route] page for real badges (no 404/console errors). Render's
+`dealradar-score` cron (already deployed, was a no-op per its old scaffold) auto-deploys from
+`main` too — its next scheduled run is 30 min after the 21:00 UTC poll; check Render's run
+log or query the `deals` table afterward to confirm it created/updated rows on prod, not just
+locally (same "verified = deployed + real run" bar as D25's lesson).
 
 ## ✅ D25 calendar swap — COMMITTED + PUSHED + LIVE ON PROD (2026-08-01)
 User eyeballed the react-day-picker swap on their own local dev server and signed off.

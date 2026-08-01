@@ -31,7 +31,8 @@ headline day.
 every route's discount_pct to confirm the 0-GRAB result is correct (real fares just haven't
 dropped 15%+ yet), not a silent scoring bug. Live-checked badges on a local dev server
 (`/deals`, `/flights/sin-bkk`, `/flights/sin-per`) — content matches the CLI diagnostic
-exactly, no console errors. **NOT committed this session** — see current_state.md.
+exactly, no console errors. Committed `65337b8`, pushed to `origin/main` — see
+current_state.md for the prod-verification follow-up.
 
 ## 2026-08-01 — D25: Swap hand-rolled calendar for react-day-picker
 User called the custom calendar "broken and ugly" (round 1: autocomplete-scare turned out
