@@ -2,16 +2,27 @@
 
 _Read this first each session; update it last. The blueprint lives in `foundation.md` — grep it, don't re-read it whole._
 
-**Last updated:** 2026-07-12 (D23 built + fully verified working; D24 handoff-blend shipped
-same day — see below. NOT yet committed/pushed: all D23+D24 changes are working-tree only.)
+**Last updated:** 2026-08-01 (D25 calendar swap committed, pushed, deployed, and verified
+live on faresteal.com/search.)
 
-## ⚠ NEXT SESSION FIRST: commit + push + verify on faresteal.com
-All of D23 (branded search form) + D24 (handoff blend) + the CSP/overflow fixes are
-**uncommitted working-tree changes**. Do not repeat the D22 mistake — commit, push, wait for
-Vercel, then have the user eyeball https://www.faresteal.com/search (one delayed request max;
-no curl loops — bot challenge). Files touched: components/flight-search-form.tsx (new),
-app/search/page.tsx, app/page.tsx, app/deals/page.tsx, app/flights/[route]/page.tsx,
-app/go/[provider]/route.ts, lib/go-links.ts, app/globals.css, next.config.ts, .claude/launch.json (new).
+## ✅ D25 calendar swap — COMMITTED + PUSHED + LIVE ON PROD (2026-08-01)
+User eyeballed the react-day-picker swap on their own local dev server and signed off.
+Committed `f689358`, pushed to `origin/main`. Live-on-prod check of
+https://www.faresteal.com/search: page loads clean (title "Search flights — FareSteal", no
+console errors), calendar popover renders with `navLayout="around"` (centered month label,
+flanking chevrons), and clicking "Next month" moved August 2026 → September 2026 —
+confirming the actual functional bug this pass fixed (nav arrows previously did nothing,
+`month` was fully controlled with no `onMonthChange`) works on the live site, not just dev.
+Full rationale in decisions.md D25.
+
+## ✅ D23/D24 — COMMITTED + PUSHED + LIVE ON PROD (2026-07-12)
+Local build re-verified green after clearing the OneDrive-corrupted `.next` cache (`rm -rf
+.next`, known issue — see ENVIRONMENT note below). Committed as `1d7864c`, pushed to
+`origin/main`. Post-deploy check of https://www.faresteal.com/search: page loads (title
+"Search flights — FareSteal"), From/To fields + date selection present, no errors.
+**⚠ Still unverified:** actual click-driven behavior in prod (autocomplete dropdown, calendar
+popover, submit → `/go/aviasales?...` redirect) — a fetch-based check can't exercise clicks.
+User to manually click through once on the live site before calling this fully done.
 
 ## ⚠ ENVIRONMENT: OneDrive corrupts .next — user decision pending
 Repo lives in OneDrive; sync corrupted the dev `.next` cache 3× in one session (server 500s /

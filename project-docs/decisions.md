@@ -1,5 +1,26 @@
 # Decisions — DealRadar (append-only)
 
+## 2026-08-01 — D25: Swap hand-rolled calendar for react-day-picker
+User called the custom calendar "broken and ugly" (round 1: autocomplete-scare turned out
+environment-specific — Chrome extension hydration mismatch / stale OneDrive `.next` cache,
+not code). Round 2: user said it was still "ugly and unprofessional." **Decided:** replace
+the custom-built calendar in `flight-search-form.tsx` with `react-day-picker` (new dep),
+themed to the site's coral/ink palette (Aviasales-style single-month, minimal chrome), rather
+than keep patching the hand-rolled version. Root cause of the misalignment: day *cells* were
+sized 38px via `--rdp-day-height/width` but day *buttons* were left at the library's default
+42-44px, overflowing their cells — fixed by matching both to 38px. Also removed the default
+2px selected-border (redundant with coral fill), reset "selected = bigger+bold" back to
+normal size, switched to `navLayout="around"` (centered month label, flanking chevrons — was
+overlapping top-right), softened popover shadow/radius. **Real functional bug found in
+review and fixed:** `month` prop was fully controlled (`isoToDate(selected ?? min)`) with no
+`onMonthChange`, so the nav arrows silently did nothing — changed to `defaultMonth`
+(uncontrolled) so navigation actually updates.
+**Verified:** local `next build` (lint+types+28 routes) green; user eyeballed on local dev
+server and signed off. Committed `f689358`, pushed, deployed. Live-on-prod check
+(faresteal.com/search): page loads clean (no console errors), calendar renders with
+`navLayout="around"` centered label, clicked "Next month" → August 2026 → September 2026
+confirmed working on the live site (not just dev).
+
 ## 2026-07-12 — D24: Blend the two Aviasales handoff journeys (keep split, unify the seams)
 User flagged that "Go to deal" (→ Aviasales direct) vs nav "Search flights" (→ our D23 form)
 felt inconsistent. **Decided (user: "ok let's try"):** keep the structural split — deal cards
